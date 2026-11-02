@@ -1,0 +1,1872 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "total_questions": 52,
+    "system_name": "LapDoc Laptop Expert System",
+    "categories": {
+      "power_battery": "Power & Battery Subsystem",
+      "display_graphics": "Display & Graphics Subsystem",
+      "thermals_cooling": "Thermals & Cooling Subsystem",
+      "storage_boot": "Storage & Operating System Boot",
+      "memory_performance": "Memory & System Performance",
+      "peripherals_input": "Keyboard, Touchpad & I/O Ports",
+      "connectivity_audio": "Audio, Wi-Fi & Chassis Integrity"
+    }
+  },
+  "emergency_entry_node": "q_emergency_triage",
+  "nodes": {
+    "q_emergency_triage": {
+      "id": "q_emergency_triage",
+      "category": "triage",
+      "title": "Primary Laptop Symptom",
+      "question": "What is the primary issue you are facing with your laptop right now?",
+      "why": "Identifies the core hardware/software failure domain to immediately eliminate unrelated diagnostic branches.",
+      "options": [
+        {
+          "key": "power",
+          "label": "Completely dead, won't turn on, or charging problems",
+          "is_healthy": false,
+          "penalty": 0,
+          "next_question": "q_power_state"
+        },
+        {
+          "key": "display",
+          "label": "Screen is black, flickering, distorted, or has lines",
+          "is_healthy": false,
+          "penalty": 0,
+          "next_question": "q_display_illumination"
+        },
+        {
+          "key": "thermals",
+          "label": "Overheating, screaming fans, or shutting down under load",
+          "is_healthy": false,
+          "penalty": 0,
+          "next_question": "q_fan_noise"
+        },
+        {
+          "key": "boot",
+          "label": "Boot loop, Blue Screen (BSOD), or 'No Boot Device' error",
+          "is_healthy": false,
+          "penalty": 0,
+          "next_question": "q_boot_outcome"
+        },
+        {
+          "key": "memory",
+          "label": "Random freezing, beep codes, or memory crashes",
+          "is_healthy": false,
+          "penalty": 0,
+          "next_question": "q_post_beeps"
+        },
+        {
+          "key": "peripherals",
+          "label": "Keyboard, trackpad, USB ports, sound, or Wi-Fi broken",
+          "is_healthy": false,
+          "penalty": 0,
+          "next_question": "q_keyboard_keys"
+        }
+      ]
+    },
+    "q_power_state": {
+      "id": "q_power_state",
+      "category": "power_battery",
+      "title": "Power-On Response",
+      "question": "When pressing the power button, does the laptop show ANY signs of life (fan spin, LEDs, keyboard light, sound)?",
+      "why": "Differentiates between complete mother-rail/power delivery failure and partial POST initialization.",
+      "options": [
+        {
+          "key": "no_life",
+          "label": "Zero signs of life (completely unresponsive)",
+          "is_healthy": false,
+          "penalty": 25,
+          "defect_description": "Laptop fails to initiate power rails (No POST, No LEDs)",
+          "severity": "critical",
+          "estimated_cost_usd": "$50 - $200",
+          "next_question": "q_charger_led"
+        },
+        {
+          "key": "turns_on_normal",
+          "label": "Turns on normally and boots",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_charging_behavior"
+        },
+        {
+          "key": "turns_on_then_dies",
+          "label": "Powers on for 1-3 seconds, then immediately shuts off",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "Power loop / Short circuit protection trigger",
+          "severity": "critical",
+          "estimated_cost_usd": "$60 - $180",
+          "leaf_diagnosis": {
+            "title": "Motherboard Short Circuit or Power Rail Trip",
+            "issue": "The power management IC (PMIC) is detecting an over-current condition or shorted capacitor/MOSFET on a secondary rail (3.3V/5V/VCore), triggering immediate emergency shutdown.",
+            "remediation": [
+              "Perform a hard EC reset: Disconnect charger, hold power button down for 45 seconds.",
+              "If internal battery is accessible, disconnect battery and run on AC adapter only.",
+              "Inspect USB ports for physically bent or bridged metal pins causing 5V shorts.",
+              "If behavior persists, board-level repair or motherboard replacement is required."
+            ],
+            "urgency": "Critical",
+            "diy_friendly": false
+          }
+        }
+      ]
+    },
+    "q_charger_led": {
+      "id": "q_charger_led",
+      "category": "power_battery",
+      "title": "AC Adapter / Charging Port LED",
+      "question": "When the charger is plugged in, does the charging indicator LED on the laptop or the charger turn on?",
+      "why": "Determines whether DC voltage is successfully reaching the DC-in jack and charging circuit.",
+      "options": [
+        {
+          "key": "charger_led_off",
+          "label": "No LED lights up anywhere",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "No DC input detected; dead AC adapter or broken DC jack",
+          "severity": "high",
+          "estimated_cost_usd": "$20 - $65",
+          "leaf_diagnosis": {
+            "title": "Faulty AC Adapter or Broken DC-In Power Jack",
+            "issue": "No electrical potential is reaching the charging circuit. The charger brick has failed, the wall outlet is dead, or the physical center pin / soldered DC-in jack is cracked.",
+            "remediation": [
+              "Test the wall outlet with a known working lamp or phone charger.",
+              "Test with an alternate OEM charger with matching voltage and amperage rating.",
+              "Check the DC barrel / Type-C cable for frayed wires or bent internal pins.",
+              "Replace the modular DC-in harness cable if the laptop uses a cable-style jack."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        },
+        {
+          "key": "charger_led_on",
+          "label": "Yes, charging LED turns on (solid white/amber)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_power_button_feel"
+        },
+        {
+          "key": "charger_led_blinking_code",
+          "label": "LED blinks repeatedly in a distinct color/number pattern",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "OEM diagnostic blink code indicating hardware failure",
+          "severity": "critical",
+          "estimated_cost_usd": "$40 - $150",
+          "leaf_diagnosis": {
+            "title": "OEM Diagnostic Hardware Error Code",
+            "issue": "Modern laptops (Dell, HP, Lenovo) flash power/battery LEDs to signal specific board errors (e.g. 2 amber + 3 white = No RAM detected, 3 amber + 5 white = Power rail failure).",
+            "remediation": [
+              "Count the exact sequence of blinks (e.g., number of amber vs white blinks).",
+              "Look up the diagnostic code in your laptop manufacturer's service manual.",
+              "Reseat memory modules if the blink code points to memory fault.",
+              "Perform a CMOS/RTC battery clear."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_power_button_feel": {
+      "id": "q_power_button_feel",
+      "category": "power_battery",
+      "title": "Power Button Mechanics",
+      "question": "Does the power button feel physically clicky and intact, or is it recessed/integrated into the keyboard?",
+      "why": "Many modern laptops integrate the power button into the keyboard matrix; a spilled beverage or severed ribbon cable disables the power trigger.",
+      "options": [
+        {
+          "key": "button_normal",
+          "label": "Button clicks normally, but laptop still will not turn on",
+          "is_healthy": true,
+          "penalty": 15,
+          "defect_description": "Internal Embedded Controller (EC) or BIOS failure",
+          "severity": "critical",
+          "estimated_cost_usd": "$60 - $180",
+          "leaf_diagnosis": {
+            "title": "Dead Motherboard / Failed Embedded Controller (EC)",
+            "issue": "The laptop receives standby 19V and 3.3V, but the Embedded Controller fails to trigger the system power-on sequence (`PCH_PWR_EN` / `RSMRST#`).",
+            "remediation": [
+              "Unplug charger and battery, hold power button 60 seconds to drain capacitors.",
+              "Disconnect the coin-cell CMOS battery for 15 minutes to reset the BIOS state.",
+              "Reflash the BIOS chip using a hardware programmer (CH341A) or send for board diagnosis."
+            ],
+            "urgency": "Critical",
+            "diy_friendly": false
+          }
+        },
+        {
+          "key": "button_sticky_or_broken",
+          "label": "Button is stuck, mushy, or damaged from liquid spill",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Damaged power switch / keyboard power key failure",
+          "severity": "medium",
+          "estimated_cost_usd": "$30 - $75",
+          "leaf_diagnosis": {
+            "title": "Defective Power Button or Keyboard Assembly",
+            "issue": "The physical tactile micro-switch is corroded, broken, or the keyboard membrane trace for the power button has disconnected.",
+            "remediation": [
+              "Replace the small power button sub-board or the top-case keyboard assembly.",
+              "If keyboard-integrated, test by bridging the power pins on the motherboard power connector."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_charging_behavior": {
+      "id": "q_charging_behavior",
+      "category": "power_battery",
+      "title": "Battery Charging Status",
+      "question": "In the OS, does the battery status say 'Plugged in, charging' and actually increase in percentage?",
+      "why": "Identifies battery cell degradation, charging MOSFET failures, and SMBus battery communication errors.",
+      "options": [
+        {
+          "key": "charges_fine",
+          "label": "Charges normally to 100%",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_battery_discharge"
+        },
+        {
+          "key": "plugged_not_charging",
+          "label": "Says 'Plugged in, not charging' or percentage stays frozen",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Battery firmware lockout or charging circuit failure",
+          "severity": "medium",
+          "estimated_cost_usd": "$45 - $90",
+          "leaf_diagnosis": {
+            "title": "Battery Charging Lockout or Degraded Cells",
+            "issue": "The battery BMS (Battery Management System) has locked out charging due to cell imbalance, or the Microsoft ACPI-Compliant Control Method Battery driver is corrupted.",
+            "remediation": [
+              "Open Device Manager -> Batteries -> Uninstall 'Microsoft ACPI-Compliant Control Method Battery' -> Restart.",
+              "Check battery health report in terminal (`powercfg /batteryreport` on Windows or `upower` on Linux).",
+              "Check if manufacturer battery conservation mode (e.g. Lenovo Vantage 60% cap) is active."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        },
+        {
+          "key": "instant_shutoff_unplug",
+          "label": "Laptop instantly dies the exact millisecond the AC charger is unplugged",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Dead battery pack or blown battery discharge fuse",
+          "severity": "high",
+          "estimated_cost_usd": "$40 - $85",
+          "leaf_diagnosis": {
+            "title": "Dead Internal Battery Pack",
+            "issue": "The internal battery cells have zero voltage capacity, a blown thermal fuse on the BMS, or the battery connector is disconnected.",
+            "remediation": [
+              "Replace internal battery pack with a genuine OEM replacement.",
+              "Inspect battery connector pins for corrosion or bent terminals."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_battery_discharge": {
+      "id": "q_battery_discharge",
+      "category": "power_battery",
+      "title": "Battery Runtime & Life",
+      "question": "How long does the battery last on a full charge under typical web browsing / office use?",
+      "why": "Quantifies wear level and real-world degradation of lithium-ion cells.",
+      "options": [
+        {
+          "key": "normal_4h_plus",
+          "label": "4+ hours of healthy backup",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_battery_bulge"
+        },
+        {
+          "key": "moderate_2_3h",
+          "label": "2 to 3 hours (moderate wear)",
+          "is_healthy": true,
+          "penalty": 5,
+          "next_question": "q_battery_bulge"
+        },
+        {
+          "key": "poor_under_45m",
+          "label": "Less than 45 minutes / sudden drops from 40% to 5%",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Severe battery wear (>60% capacity loss)",
+          "severity": "medium",
+          "estimated_cost_usd": "$40 - $90",
+          "next_question": "q_battery_bulge"
+        }
+      ]
+    },
+    "q_battery_bulge": {
+      "id": "q_battery_bulge",
+      "category": "power_battery",
+      "title": "Physical Battery Swelling / Trackpad Lifting",
+      "question": "Is the trackpad lifting, palm rest bowing upwards, or bottom chassis seam splitting?",
+      "why": "Swollen lithium pouches are a fire hazard and physically destroy touchpads and chassis.",
+      "options": [
+        {
+          "key": "flat_normal",
+          "label": "No swelling, chassis and trackpad are completely flat",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_usbc_charging"
+        },
+        {
+          "key": "swollen_battery",
+          "label": "YES! Trackpad is pushed up or chassis bottom is bulging",
+          "is_healthy": false,
+          "penalty": 30,
+          "defect_description": "Critically swollen lithium-ion battery pack (FIRE HAZARD)",
+          "severity": "critical",
+          "estimated_cost_usd": "$50 - $110",
+          "leaf_diagnosis": {
+            "title": "DANGEROUS: Swollen Lithium-Ion Battery",
+            "issue": "Electrolyte gas buildup inside lithium pouches due to age, heat, or internal shorting. Poses an imminent thermal runaway/fire risk and will crack the trackpad glass.",
+            "remediation": [
+              "STOP using and STOP charging the laptop immediately.",
+              "Safely power down the device.",
+              "Carefully unscrew bottom cover and remove swollen battery pack; dispose at certified e-waste facility.",
+              "DO NOT puncture, bend, or crush the battery."
+            ],
+            "urgency": "Critical",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_usbc_charging": {
+      "id": "q_usbc_charging",
+      "category": "power_battery",
+      "title": "USB-C Power Delivery Recognition",
+      "question": "If your laptop supports USB-C charging, does it negotiate charging on all USB-C PD ports?",
+      "why": "Validates USB Type-C Power Delivery controller chips (TI / Cypress / Parade) and ESD protection diodes.",
+      "options": [
+        {
+          "key": "usbc_ok_or_na",
+          "label": "Charges properly via USB-C (or uses traditional DC barrel jack)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_display_illumination"
+        },
+        {
+          "key": "usbc_slow_or_refused",
+          "label": "Shows 'Slow charger' warning or port is loose/unresponsive",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "USB-C PD CC-line failure or loose daughterboard port",
+          "severity": "medium",
+          "estimated_cost_usd": "$30 - $80",
+          "next_question": "q_display_illumination"
+        }
+      ]
+    },
+    "q_display_illumination": {
+      "id": "q_display_illumination",
+      "category": "display_graphics",
+      "title": "Display Power & Illumination",
+      "question": "When the laptop is on, does the screen light up at all, or is it completely pitch black?",
+      "why": "Separates backlight circuit / panel defects from GPU rendering failures.",
+      "options": [
+        {
+          "key": "screen_lights_up",
+          "label": "Screen lights up and displays an image or logo",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_screen_flicker"
+        },
+        {
+          "key": "screen_completely_dark",
+          "label": "Screen is completely black (no backlight glow)",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "Black screen with laptop powered on",
+          "severity": "critical",
+          "estimated_cost_usd": "$50 - $150",
+          "next_question": "q_flashlight_test"
+        }
+      ]
+    },
+    "q_flashlight_test": {
+      "id": "q_flashlight_test",
+      "category": "display_graphics",
+      "title": "Flashlight Backlight Test",
+      "question": "If you shine your smartphone flashlight directly onto the black screen at an angle, can you faintly see desktop icons or text?",
+      "why": "If faint image is visible, the LCD panel and GPU work fine, but the LED backlight fuse or inverter has blown.",
+      "options": [
+        {
+          "key": "faint_image_seen",
+          "label": "Yes! I can faintly see windows/text under the bright flashlight",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "Blown motherboard backlight fuse or dead screen LED strip",
+          "severity": "high",
+          "estimated_cost_usd": "$40 - $120",
+          "leaf_diagnosis": {
+            "title": "Blown Screen Backlight Fuse / Circuit",
+            "issue": "The LCD panel is receiving video data from the GPU, but the 19V LED backlight power circuit (often protected by a 0402 SMD fuse near the eDP connector) has blown.",
+            "remediation": [
+              "Often caused by plugging in or unplugging the screen ribbon cable while battery was connected.",
+              "Test continuity of the backlight SMD fuse on the motherboard with a multimeter.",
+              "If fuse is intact, replace the LCD panel or the eDP cable."
+            ],
+            "urgency": "High",
+            "diy_friendly": false
+          }
+        },
+        {
+          "key": "nothing_visible",
+          "label": "No, nothing at all is visible even under direct flashlight",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "No video signal generated (RAM/GPU/eDP cable failure)",
+          "severity": "critical",
+          "estimated_cost_usd": "$50 - $200",
+          "next_question": "q_external_monitor"
+        }
+      ]
+    },
+    "q_external_monitor": {
+      "id": "q_external_monitor",
+      "category": "display_graphics",
+      "title": "External Monitor / TV Connection",
+      "question": "When you plug the laptop into an external monitor or TV via HDMI / Type-C, does an image appear on the external screen?",
+      "why": "Pinpoints whether the GPU is alive and outputting frames, isolating the issue to the internal panel/cable vs. system board.",
+      "options": [
+        {
+          "key": "external_works",
+          "label": "YES! External monitor shows full normal desktop",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Defective internal LCD screen or damaged eDP display ribbon cable",
+          "severity": "high",
+          "estimated_cost_usd": "$60 - $130",
+          "leaf_diagnosis": {
+            "title": "Defective Laptop LCD Screen or Damaged eDP Cable",
+            "issue": "The CPU/GPU and operating system are running smoothly, but the internal eDP (embedded DisplayPort) ribbon cable is pinched in the hinge or the LCD controller is dead.",
+            "remediation": [
+              "Open bottom panel and verify internal display ribbon cable is securely seated in the motherboard latch.",
+              "Inspect ribbon cable for wear or crimping near the hinge.",
+              "Replace the internal LCD screen panel (match model number on back of panel)."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        },
+        {
+          "key": "external_no_signal",
+          "label": "NO, external monitor also says 'No Signal'",
+          "is_healthy": false,
+          "penalty": 25,
+          "defect_description": "System fails POST / No video signal generated from GPU/RAM",
+          "severity": "critical",
+          "estimated_cost_usd": "$50 - $180",
+          "next_question": "q_post_beeps"
+        }
+      ]
+    },
+    "q_screen_flicker": {
+      "id": "q_screen_flicker",
+      "category": "display_graphics",
+      "title": "Hinge Movement & Screen Flicker",
+      "question": "Does the screen flicker, go black, or show horizontal glitch lines when you physically tilt the laptop lid back and forth?",
+      "why": "Movement-correlated distortion is the hallmark signature of a physically pinched or frayed eDP video cable inside the clutch hinge.",
+      "options": [
+        {
+          "key": "flicker_free",
+          "label": "Screen is completely stable at all angles",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_gpu_artifacts"
+        },
+        {
+          "key": "flickers_on_movement",
+          "label": "Yes, moving the lid causes screen blinking or visual tears",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Frayed or loose eDP video ribbon cable passing through hinge",
+          "severity": "medium",
+          "estimated_cost_usd": "$25 - $60",
+          "leaf_diagnosis": {
+            "title": "Frayed or Pinched eDP Display Ribbon Cable",
+            "issue": "Repeated opening and closing of the laptop lid has worn down the microscopic copper conductors inside the video ribbon harness passing through the hinge.",
+            "remediation": [
+              "Order a replacement eDP video cable matching your exact laptop model.",
+              "Remove screen bezel and bottom chassis to route and install the new harness.",
+              "Verify hinge tension is not overly tight."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_gpu_artifacts": {
+      "id": "q_gpu_artifacts",
+      "category": "display_graphics",
+      "title": "Graphical Artifacts & Pixel Glitches",
+      "question": "Do you see colored blocks, pink/green lines, checkerboard patterns, or driver crashing during video playback or games?",
+      "why": "Detects failing VRAM chips, cold solder joints under the GPU BGA, or failing display drivers.",
+      "options": [
+        {
+          "key": "artifacts_none",
+          "label": "Image is clean with zero visual artifacts",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_dead_pixels"
+        },
+        {
+          "key": "artifacts_present",
+          "label": "Yes, colored lines, checkerboards, or direct driver timeout crashes",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "GPU VRAM memory degradation or failing BGA solder balls",
+          "severity": "critical",
+          "estimated_cost_usd": "$100 - $300",
+          "leaf_diagnosis": {
+            "title": "Failing Dedicated GPU or VRAM Memory Degradation",
+            "issue": "Thermal cycling has cracked microscopic solder balls beneath the dedicated GPU (Nvidia/AMD) or VRAM chips, causing corrupted framebuffers and TDR crashes.",
+            "remediation": [
+              "Perform a clean GPU driver reinstall using Display Driver Uninstaller (DDU) in Safe Mode.",
+              "Underclock GPU core and memory clocks by 100MHz using MSI Afterburner to test stability.",
+              "If artifacts persist in BIOS, hardware BGA reballing or board replacement is required."
+            ],
+            "urgency": "High",
+            "diy_friendly": false
+          }
+        }
+      ]
+    },
+    "q_dead_pixels": {
+      "id": "q_dead_pixels",
+      "category": "display_graphics",
+      "title": "Dead Pixels & Panel Bleed",
+      "question": "Are there permanent colored dots (stuck pixels), black spots, or severe backlight bleeding in corners?",
+      "why": "Physical panel quality check for pre-purchase inspection.",
+      "options": [
+        {
+          "key": "panel_pristine",
+          "label": "Panel is pristine, no stuck pixels or severe bleed",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_fan_noise"
+        },
+        {
+          "key": "panel_defects_minor",
+          "label": "1-3 dead pixels or minor backlight bleed (cosmetic)",
+          "is_healthy": true,
+          "penalty": 5,
+          "next_question": "q_fan_noise"
+        },
+        {
+          "key": "panel_cracked_or_lines",
+          "label": "Permanent vertical colored lines or ink-like black blotches",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "Physically damaged LCD substrate / cracked panel",
+          "severity": "high",
+          "estimated_cost_usd": "$70 - $160",
+          "next_question": "q_fan_noise"
+        }
+      ]
+    },
+    "q_fan_noise": {
+      "id": "q_fan_noise",
+      "category": "thermals_cooling",
+      "title": "Cooling Fan Sound & Acoustics",
+      "question": "What does the cooling fan sound like when spinning?",
+      "why": "Identifies worn fan sleeve bearings, off-balance blades, or physical cable obstructions.",
+      "options": [
+        {
+          "key": "smooth_airflow",
+          "label": "Smooth airflow whoosh with no weird noises",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_fan_speed_idle"
+        },
+        {
+          "key": "grinding_rattling",
+          "label": "Rattling, buzzing, grinding, or high-pitched squeak",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Worn fan sleeve bearings or broken fan blade",
+          "severity": "medium",
+          "estimated_cost_usd": "$15 - $40",
+          "leaf_diagnosis": {
+            "title": "Worn Cooling Fan Bearing or Blade Obstruction",
+            "issue": "The fluid dynamic or sleeve bearing inside the brushless fan motor has dried out, causing vibration, acoustic rattle, and reduced RPM cooling performance.",
+            "remediation": [
+              "Open bottom panel and inspect fan for hair, debris, or loose cables rubbing against blades.",
+              "Clean with compressed air while holding the fan blades still (prevent back-EMF).",
+              "Replace the cooling fan assembly (readily available OEM part for $15\u2013$30)."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        },
+        {
+          "key": "fan_never_spins",
+          "label": "Fan NEVER spins at all, even when laptop gets blistering hot",
+          "is_healthy": false,
+          "penalty": 25,
+          "defect_description": "Dead cooling fan motor or blown 5V fan header circuit",
+          "severity": "critical",
+          "estimated_cost_usd": "$20 - $50",
+          "leaf_diagnosis": {
+            "title": "Seized Fan Motor or Fan Header Failure",
+            "issue": "Zero active cooling is operating. The laptop will thermal-throttle down to un-usable speeds and shut down violently to prevent CPU silicon destruction.",
+            "remediation": [
+              "Check if fan connector is disconnected from the motherboard.",
+              "Replace the defective fan unit immediately.",
+              "Do not use laptop under load until fan is repaired."
+            ],
+            "urgency": "Critical",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_fan_speed_idle": {
+      "id": "q_fan_speed_idle",
+      "category": "thermals_cooling",
+      "title": "Fan Behavior at Idle",
+      "question": "When sitting on the desktop with no programs open, are the fans roaring at 100% full speed continuously?",
+      "why": "Flags runaway background processes, dried thermal paste, or faulty temperature sensor readings.",
+      "options": [
+        {
+          "key": "quiet_at_idle",
+          "label": "Quiet or completely silent at idle",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_chassis_heat"
+        },
+        {
+          "key": "max_fan_idle",
+          "label": "Fans scream at 100% nonstop, even when cold or idling",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Thermal paste pump-out or background crypto miner/runaway process",
+          "severity": "medium",
+          "estimated_cost_usd": "$15 - $50",
+          "next_question": "q_chassis_heat"
+        }
+      ]
+    },
+    "q_chassis_heat": {
+      "id": "q_chassis_heat",
+      "category": "thermals_cooling",
+      "title": "Bottom Chassis Temperature",
+      "question": "Does the bottom chassis or keyboard deck get uncomfortably or dangerously hot to the touch during use?",
+      "why": "Indicates clogged heatsink fin stacks or dried out thermal interface material.",
+      "options": [
+        {
+          "key": "warm_normal",
+          "label": "Mildly warm, comfortable on lap",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_thermal_shutdown"
+        },
+        {
+          "key": "scorching_hot",
+          "label": "Scorching hot (cannot touch bottom panel for more than 5 seconds)",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Severe heat accumulation / thermal bottleneck",
+          "severity": "high",
+          "estimated_cost_usd": "$20 - $55",
+          "next_question": "q_thermal_shutdown"
+        }
+      ]
+    },
+    "q_thermal_shutdown": {
+      "id": "q_thermal_shutdown",
+      "category": "thermals_cooling",
+      "title": "Thermal Emergency Power Cutoff",
+      "question": "Does the laptop abruptly shut off with zero warning after 15-30 minutes of gaming, video editing, or heavy load?",
+      "why": "CPU/GPU thermal junction limit (PROCHOT at ~100\u00b0C) triggering emergency hardware shutdown to prevent silicon damage.",
+      "options": [
+        {
+          "key": "no_shutdowns",
+          "label": "Never shuts down abruptly during heavy tasks",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_boot_outcome"
+        },
+        {
+          "key": "shuts_down_under_load",
+          "label": "Yes, consistently powers off after gaming or heavy stress",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "Severe thermal junction trip (CPU/GPU hitting 105\u00b0C)",
+          "severity": "high",
+          "estimated_cost_usd": "$20 - $60",
+          "leaf_diagnosis": {
+            "title": "Severe Thermal Overheating (Dried Paste / Clogged Heatsink)",
+            "issue": "A 'dust felt' blanket has formed between the fan impeller and the copper heatsink radiator fins, or the factory thermal paste has dried into a chalky insulator, trapping 100\u00b0C+ heat on the die.",
+            "remediation": [
+              "Remove heatsink, scrape off hardened thermal paste using 99% isopropyl alcohol.",
+              "Apply high-viscosity thermal paste (e.g., Honeywell PTM7950 or Arctic MX-6).",
+              "Blow compressed air through heatsink exhaust radiator fins to dislodge dust blankets.",
+              "Ensure all thermal pads on VRMs and VRAM make proper contact."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_boot_outcome": {
+      "id": "q_boot_outcome",
+      "category": "storage_boot",
+      "title": "Bootloader & OS Startup",
+      "question": "What happens on screen immediately after the manufacturer logo appears?",
+      "why": "Isolates storage drive hardware recognition from OS bootloader corruption and hardware crashes.",
+      "options": [
+        {
+          "key": "boots_to_desktop",
+          "label": "Boots straight to Windows/Linux desktop normally",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_bsod_crashes"
+        },
+        {
+          "key": "no_bootable_device",
+          "label": "Shows 'No Bootable Device Found' or boots directly to BIOS",
+          "is_healthy": false,
+          "penalty": 25,
+          "defect_description": "Storage drive unreadable or corrupted EFI boot partition",
+          "severity": "critical",
+          "estimated_cost_usd": "$40 - $110",
+          "leaf_diagnosis": {
+            "title": "Unrecognized Storage Drive or Corrupted EFI Bootloader",
+            "issue": "The motherboard firmware cannot detect a readable bootable partition. Either the NVMe M.2 / SATA SSD has disconnected/died, or the UEFI EFI partition is wiped.",
+            "remediation": [
+              "Enter BIOS (press F2 / Del / F12 on boot) and verify if the SSD model name is listed in the storage menu.",
+              "If SSD is listed in BIOS: Boot from a USB installer and run `bootrec /fixboot` and `bcdboot` to rebuild EFI.",
+              "If SSD is NOT listed in BIOS: Reseat the M.2 SSD in its slot; if still missing, SSD controller has died."
+            ],
+            "urgency": "Critical",
+            "diy_friendly": true
+          }
+        },
+        {
+          "key": "infinite_spinning_loop",
+          "label": "Gets stuck on an endless spinning loading wheel or automatic repair loop",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Corrupted OS system files or failing SSD bad blocks",
+          "severity": "high",
+          "estimated_cost_usd": "$0 - $60",
+          "leaf_diagnosis": {
+            "title": "Corrupted Operating System or Filesystem Bad Blocks",
+            "issue": "Core system files (e.g. `ntoskrnl.exe`, system registry hive) failed integrity check during kernel load.",
+            "remediation": [
+              "Boot into Windows Recovery Environment (WinRE) -> Advanced Options -> Startup Repair.",
+              "Open Command Prompt in WinRE and run `chkdsk C: /f /r` and `sfc /scannow`.",
+              "If automatic repair fails repeatedly, perform a clean OS reinstallation."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_bsod_crashes": {
+      "id": "q_bsod_crashes",
+      "category": "storage_boot",
+      "title": "Blue Screen (BSOD) / Kernel Panic",
+      "question": "Does the laptop encounter Blue Screens of Death (BSOD), kernel panics, or sudden reboots?",
+      "why": "Distinguishes between stable system operation and kernel-level hardware driver/hardware faults.",
+      "options": [
+        {
+          "key": "no_bsod",
+          "label": "Never encounters Blue Screens (rock stable)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_drive_sounds"
+        },
+        {
+          "key": "frequent_bsod",
+          "label": "Frequent BSODs with random stop codes (CRITICAL_PROCESS_DIED, KERNEL_DATA_INPAGE_ERROR)",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "System instability / RAM or SSD page fault crash",
+          "severity": "high",
+          "estimated_cost_usd": "$30 - $90",
+          "leaf_diagnosis": {
+            "title": "Failing Storage Drive or Corrupt Pagefile (Kernel Data Inpage Error)",
+            "issue": "Stop codes like `KERNEL_DATA_INPAGE_ERROR` or `UNEXPECTED_STORE_EXCEPTION` occur when the OS attempts to read memory pages cached on the SSD, but the storage drive drops offline momentarily.",
+            "remediation": [
+              "Check drive health using CrystalDiskInfo or smartctl.",
+              "Reseat NVMe SSD and check for thermal throttling on SSD controller.",
+              "Update SSD firmware from manufacturer utility (Samsung Magician, Crucial Executive, etc.)."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_drive_sounds": {
+      "id": "q_drive_sounds",
+      "category": "storage_boot",
+      "title": "Storage Acoustic Clicking / Beeping",
+      "question": "Do you hear rhythmic mechanical clicking, scratching, or ticking sounds coming from the palm rest area?",
+      "why": "Mechanical click of death indicates head-crash on mechanical HDD; SSDs are purely silent.",
+      "options": [
+        {
+          "key": "silent_solid_state",
+          "label": "Completely silent (Solid State / NVMe drive)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_boot_speed"
+        },
+        {
+          "key": "clicking_mechanical",
+          "label": "Repetitive mechanical clicking or scratching sounds",
+          "is_healthy": false,
+          "penalty": 25,
+          "defect_description": "Mechanical HDD head failure ('Click of Death')",
+          "severity": "critical",
+          "estimated_cost_usd": "$45 - $120",
+          "leaf_diagnosis": {
+            "title": "Imminent Mechanical Hard Drive Failure (Click of Death)",
+            "issue": "The read/write heads of a mechanical hard disk are failing to find track zero and colliding against the actuator park stopper. Total data loss is imminent.",
+            "remediation": [
+              "BACK UP CRITICAL DATA IMMEDIATELY before turning the laptop off.",
+              "Do not run intensive defragmentation or disk repair scans.",
+              "Replace the failing mechanical HDD with a modern 2.5\" SATA SSD or M.2 NVMe SSD."
+            ],
+            "urgency": "Critical",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_boot_speed": {
+      "id": "q_boot_speed",
+      "category": "storage_boot",
+      "title": "Boot Time Performance",
+      "question": "How long does it take from pressing the power button to reaching a responsive desktop?",
+      "why": "Identifies slow mechanical hard drives or failing SSD NAND flash controller degradation.",
+      "options": [
+        {
+          "key": "fast_under_20s",
+          "label": "Under 20 seconds (Fast NVMe SSD speed)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_post_beeps"
+        },
+        {
+          "key": "moderate_20_60s",
+          "label": "20 to 60 seconds (Acceptable SATA speed)",
+          "is_healthy": true,
+          "penalty": 5,
+          "next_question": "q_post_beeps"
+        },
+        {
+          "key": "very_slow_2m_plus",
+          "label": "Over 2 minutes with 100% disk usage in Task Manager",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Severe storage IOPS bottleneck (Slow 5400RPM HDD or degraded SSD)",
+          "severity": "medium",
+          "estimated_cost_usd": "$30 - $70",
+          "next_question": "q_post_beeps"
+        }
+      ]
+    },
+    "q_post_beeps": {
+      "id": "q_post_beeps",
+      "category": "memory_performance",
+      "title": "POST Beep Codes / Diagnostic Sequences",
+      "question": "Does the laptop emit audible beeps (e.g. 1-3-3-1 or continuous beeps) upon power-up?",
+      "why": "Audible BIOS beeps are standardized hardware diagnostic alerts generated before the display subsystem initializes.",
+      "options": [
+        {
+          "key": "no_beeps_normal",
+          "label": "No error beeps (normal startup)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_ram_recognized"
+        },
+        {
+          "key": "beep_code_playing",
+          "label": "Yes, rhythmic beep sequences or siren tones play on power-up",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "POST memory / motherboard hardware diagnostic beep code",
+          "severity": "critical",
+          "estimated_cost_usd": "$20 - $80",
+          "leaf_diagnosis": {
+            "title": "POST Hardware Beep Code (RAM Initialization Failure)",
+            "issue": "The BIOS power-on self-test failed during base 64K memory or SPD reading. Most commonly caused by oxidized RAM golden fingers or loose SO-DIMM latch.",
+            "remediation": [
+              "Power off, remove battery/charger, open bottom cover.",
+              "Remove RAM modules, clean golden contacts gently with an eraser and isopropyl alcohol.",
+              "Test modules one stick at a time in alternate slots to identify whether a module or a slot is dead."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_ram_recognized": {
+      "id": "q_ram_recognized",
+      "category": "memory_performance",
+      "title": "Installed vs Usable RAM Capacity",
+      "question": "In Windows 'About PC' or Linux `free -h`, is all installed physical RAM recognized and usable?",
+      "why": "Detects dead RAM channels, faulty memory mapping, or disabled integrated memory banks.",
+      "options": [
+        {
+          "key": "full_ram_ok",
+          "label": "All installed RAM is recognized (e.g., full 16GB usable)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_random_freezing"
+        },
+        {
+          "key": "half_ram_missing",
+          "label": "Only half is recognized (e.g., 16GB installed but only 8GB shown)",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Unrecognized memory channel or dead secondary RAM stick",
+          "severity": "medium",
+          "estimated_cost_usd": "$25 - $60",
+          "leaf_diagnosis": {
+            "title": "Unrecognized Memory Stick or Dead RAM Slot",
+            "issue": "One of the memory modules has failed to train during BIOS POST, or the second memory channel has broken BGA traces to the CPU memory controller.",
+            "remediation": [
+              "Reseat the unrecognized RAM module firmly into its slot until latches click.",
+              "Swap sticks between slots: if the problem follows the stick, replace the RAM stick; if it stays in the slot, slot is dead."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_random_freezing": {
+      "id": "q_random_freezing",
+      "category": "memory_performance",
+      "title": "Sudden System Freezing & Lockups",
+      "question": "Does the laptop randomly freeze completely (mouse cursor completely frozen, requiring hard power button hold)?",
+      "why": "Unresponsive hard locks point to RAM bit-flips, unstable VRM voltages, or SSD controller timeouts.",
+      "options": [
+        {
+          "key": "no_freezing",
+          "label": "System runs smoothly without hard freezes",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_keyboard_keys"
+        },
+        {
+          "key": "frequent_freezing",
+          "label": "Frequent hard freezes requiring holding the power button",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Hardware instability / Memory bit-flips under load",
+          "severity": "high",
+          "estimated_cost_usd": "$30 - $90",
+          "leaf_diagnosis": {
+            "title": "RAM Memory Instability or Unstable CPU C-States",
+            "issue": "Memory bit errors (flipping 1s to 0s) or aggressive CPU low-power C-states causing kernel thread deadlocks.",
+            "remediation": [
+              "Run Windows Memory Diagnostic (`mdsched.exe`) or MemTest86 overnight.",
+              "Disable Intel SpeedStep or AMD Cool'n'Quiet temporarily in BIOS to test power state stability.",
+              "Replace faulty RAM module if MemTest reports any memory errors."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_keyboard_keys": {
+      "id": "q_keyboard_keys",
+      "category": "peripherals_input",
+      "title": "Keyboard Key Functionality",
+      "question": "Are all keyboard keys typing reliably, or are some keys unresponsive, stuck, or typing phantom letters?",
+      "why": "Physical inspection of membrane matrix traces and beverage spill damage.",
+      "options": [
+        {
+          "key": "keyboard_flawless",
+          "label": "Every key works crisply and accurately",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_keyboard_backlight"
+        },
+        {
+          "key": "keys_dead_or_repeating",
+          "label": "Several keys are completely dead or spamming repeated letters",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Damaged keyboard membrane or broken scissor switches",
+          "severity": "medium",
+          "estimated_cost_usd": "$30 - $75",
+          "leaf_diagnosis": {
+            "title": "Failed Keyboard Membrane Matrix (Spill / Trace Corrosion)",
+            "issue": "The microscopic conductive silver traces on the flexible keyboard membrane have oxidized from moisture, severing an entire matrix row or column of keys.",
+            "remediation": [
+              "Test in an online keyboard tester to see if dead keys share a specific electrical row.",
+              "Clean under keys with compressed air and contact cleaner.",
+              "Replace the internal keyboard or upper palm rest assembly."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_keyboard_backlight": {
+      "id": "q_keyboard_backlight",
+      "category": "peripherals_input",
+      "title": "Keyboard Backlighting",
+      "question": "Does the keyboard backlight turn on and adjust brightness via the function keys?",
+      "why": "Validates separate keyboard LED ribbon cable and ambient lighting controllers.",
+      "options": [
+        {
+          "key": "backlight_ok_or_na",
+          "label": "Backlight works properly (or laptop does not have a backlit keyboard)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_trackpad_click"
+        },
+        {
+          "key": "backlight_dead",
+          "label": "Backlit keyboard is dark and won't turn on",
+          "is_healthy": false,
+          "penalty": 5,
+          "defect_description": "Disconnected keyboard backlight ribbon cable",
+          "severity": "low",
+          "estimated_cost_usd": "$0 - $25",
+          "next_question": "q_trackpad_click"
+        }
+      ]
+    },
+    "q_trackpad_click": {
+      "id": "q_trackpad_click",
+      "category": "peripherals_input",
+      "title": "Trackpad Physical Click & Surface",
+      "question": "Does the trackpad have a crisp tactile click, and does the pointer glide smoothly without jumping?",
+      "why": "Detects battery swelling underneath trackpad, worn dome switches, or grounding grounding issues.",
+      "options": [
+        {
+          "key": "trackpad_smooth",
+          "label": "Smooth tracking with crisp, responsive clicks",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_usb_ports"
+        },
+        {
+          "key": "trackpad_stiff_or_phantom",
+          "label": "Click is stiff/jammed, or cursor jumps wildly and phantom clicks",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Jammed trackpad dome switch, grounding noise, or battery swelling",
+          "severity": "medium",
+          "estimated_cost_usd": "$25 - $65",
+          "leaf_diagnosis": {
+            "title": "Jammed Trackpad Mechanism or Battery Pressure",
+            "issue": "A swelling battery directly beneath the touchpad is pressing the tactile switch permanently closed, or the grounding spring has lost contact with the chassis.",
+            "remediation": [
+              "Inspect bottom of laptop to confirm battery is not swollen.",
+              "Adjust the central clicker tension set-screw on the bottom of the trackpad bracket.",
+              "Clean around trackpad edges to dislodge dirt or sticky residue."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_usb_ports": {
+      "id": "q_usb_ports",
+      "category": "peripherals_input",
+      "title": "USB Type-A Port Integrity",
+      "question": "Do all USB Type-A ports recognize flash drives and power peripherals reliably without wiggling?",
+      "why": "Detects physically broken plastic tongues, bent 5V pins, or blown port polyfuses.",
+      "options": [
+        {
+          "key": "usb_ports_ok",
+          "label": "All USB-A ports work securely",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_webcam_mic"
+        },
+        {
+          "key": "usb_ports_broken_loose",
+          "label": "One or more USB ports are physically loose or disconnected",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Desoldered or physically broken USB-A port",
+          "severity": "medium",
+          "estimated_cost_usd": "$20 - $50",
+          "next_question": "q_webcam_mic"
+        }
+      ]
+    },
+    "q_webcam_mic": {
+      "id": "q_webcam_mic",
+      "category": "peripherals_input",
+      "title": "Webcam & Microphone",
+      "question": "When opening the Camera app, does the webcam display clear video and does the mic capture clear audio?",
+      "why": "Validates USB/MIPI video lines routed through the display lid and physical privacy shutters.",
+      "options": [
+        {
+          "key": "camera_mic_working",
+          "label": "Both webcam and microphone function clearly",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_wifi_reception"
+        },
+        {
+          "key": "camera_unrecognized",
+          "label": "Camera says 'No Camera Found' or video is distorted/pitch black",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Severed webcam ribbon harness in display bezel",
+          "severity": "low",
+          "estimated_cost_usd": "$25 - $55",
+          "next_question": "q_wifi_reception"
+        }
+      ]
+    },
+    "q_wifi_reception": {
+      "id": "q_wifi_reception",
+      "category": "connectivity_audio",
+      "title": "Wi-Fi Connectivity & Signal Range",
+      "question": "Does the laptop maintain strong Wi-Fi connections, or does signal drop out a few rooms away?",
+      "why": "Detects disconnected U.FL coaxial antenna leads or failing M.2 WLAN card (Intel/Realtek/MediaTek).",
+      "options": [
+        {
+          "key": "wifi_solid",
+          "label": "Strong signal with fast, stable speeds",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_bluetooth_pairing"
+        },
+        {
+          "key": "wifi_drops_or_missing",
+          "label": "Wi-Fi adapter completely disappears or signal only works next to router",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Disconnected internal antenna lead or defective M.2 Wi-Fi card",
+          "severity": "medium",
+          "estimated_cost_usd": "$20 - $45",
+          "leaf_diagnosis": {
+            "title": "Disconnected Antenna Leads or Failing M.2 Wi-Fi Card",
+            "issue": "The micro-coaxial antenna leads (Main/Aux) have popped off the M.2 Wi-Fi card, or the PCIe Wi-Fi card has suffered a thermal failure.",
+            "remediation": [
+              "Open bottom cover and verify both black/white antenna snap-connectors are firmly seated onto the M.2 card.",
+              "Ensure Intel/Realtek WLAN drivers are updated.",
+              "Replace M.2 Wi-Fi card with a high-performance Intel AX210 card ($20)."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_bluetooth_pairing": {
+      "id": "q_bluetooth_pairing",
+      "category": "connectivity_audio",
+      "title": "Bluetooth Subsystem",
+      "question": "Does Bluetooth turn on, discover devices, and stream audio without stuttering?",
+      "why": "Validates USB subsystem bus handling Bluetooth on combo WLAN cards.",
+      "options": [
+        {
+          "key": "bluetooth_ok",
+          "label": "Bluetooth pairs and works without issue",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_speakers_clarity"
+        },
+        {
+          "key": "bluetooth_broken",
+          "label": "Bluetooth option is completely missing from settings",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Disabled Bluetooth USB host controller or driver fault",
+          "severity": "low",
+          "estimated_cost_usd": "$15 - $35",
+          "next_question": "q_speakers_clarity"
+        }
+      ]
+    },
+    "q_speakers_clarity": {
+      "id": "q_speakers_clarity",
+      "category": "connectivity_audio",
+      "title": "Internal Speakers Acoustic Quality",
+      "question": "Do the internal laptop speakers produce clean stereo sound, or do they crackle, buzz, or remain completely silent?",
+      "why": "Detects torn speaker paper cones, metal shavings stuck to speaker magnets, or failed audio codecs.",
+      "options": [
+        {
+          "key": "speakers_clear",
+          "label": "Clean stereo sound from both left and right speakers",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_headphone_jack"
+        },
+        {
+          "key": "speakers_crackling_distorted",
+          "label": "Horrible buzzing, crackling distortion, or one side dead",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Torn speaker diaphragm or metal debris on magnetic voice coil",
+          "severity": "low",
+          "estimated_cost_usd": "$15 - $35",
+          "next_question": "q_headphone_jack"
+        },
+        {
+          "key": "speakers_completely_silent",
+          "label": "Completely silent despite audio playing in OS",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Disconnected internal speaker harness or audio amplifier IC fault",
+          "severity": "medium",
+          "estimated_cost_usd": "$15 - $45",
+          "next_question": "q_headphone_jack"
+        }
+      ]
+    },
+    "q_headphone_jack": {
+      "id": "q_headphone_jack",
+      "category": "connectivity_audio",
+      "title": "3.5mm Headphone / Combo Audio Jack",
+      "question": "When plugging in wired headphones, does the laptop detect them immediately and route sound cleanly?",
+      "why": "Checks mechanical sense pins inside the audio jack socket.",
+      "options": [
+        {
+          "key": "audio_jack_ok",
+          "label": "Headphone audio routes immediately and cleanly",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_chassis_hinges"
+        },
+        {
+          "key": "audio_jack_loose_broken",
+          "label": "Loose connection, static noise on movement, or broken off tip inside",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Damaged internal 3.5mm audio jack sense pin",
+          "severity": "low",
+          "estimated_cost_usd": "$15 - $40",
+          "next_question": "q_chassis_hinges"
+        }
+      ]
+    },
+    "q_chassis_hinges": {
+      "id": "q_chassis_hinges",
+      "category": "connectivity_audio",
+      "title": "Hinge Rigidity & Chassis Seam Integrity",
+      "question": "Are the display hinges firm and sturdy, or are brass screw mounts cracked out of the plastic palm rest?",
+      "why": "Cracked hinge brass standoffs are the #1 physical failure mode on mid-range laptops (HP 15, Dell Inspiron, Lenovo IdeaPad).",
+      "options": [
+        {
+          "key": "hinges_solid",
+          "label": "Hinges are smooth, sturdy, and chassis seams are tight",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "hinges_cracked_loose",
+          "label": "Hinge is wobbling, stiff, or plastic chassis splits open when opening the lid",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "Ruptured brass standoff nuts inside plastic palm rest / lid assembly",
+          "severity": "high",
+          "estimated_cost_usd": "$40 - $95",
+          "leaf_diagnosis": {
+            "title": "Ruptured Display Hinge Brass Standoffs",
+            "issue": "Excessive factory hinge torque has sheared the heat-set brass threaded nuts straight out of the plastic top-cover or screen back-cover. Continuing to force it will shatter the LCD screen and sever the video cable.",
+            "remediation": [
+              "Loosen the hinge tension nut slightly (1/8 turn) to reduce mechanical torque.",
+              "Re-anchor brass standoffs using high-strength structural epoxy (e.g. JB Weld PlasticWeld) or replace top cover.",
+              "Do not force lid open or closed until repaired."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_cmos_battery": {
+      "id": "q_cmos_battery",
+      "category": "power_battery",
+      "title": "System Time & CMOS Battery",
+      "question": "Does the laptop system time/date reset to Jan 1, 2015 or prompt with 'Time-of-day clock stopped' every time power is lost?",
+      "why": "Tests the condition of the RTC 3V coin-cell (CR2032 or heat-shrink 2-pin lithium battery).",
+      "options": [
+        {
+          "key": "time_keeps_synced",
+          "label": "Time and date stay synchronized correctly",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "time_resets_clock_stopped",
+          "label": "Time resets every restart or BIOS prompts 'CMOS Checksum Error'",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Exhausted 3V RTC / CMOS coin cell battery",
+          "severity": "low",
+          "estimated_cost_usd": "$5 - $15",
+          "leaf_diagnosis": {
+            "title": "Dead CMOS / Real-Time Clock (RTC) Battery",
+            "issue": "The miniature coin-cell battery powering the motherboard's RTC chip and non-volatile BIOS memory has dropped below 2.5V.",
+            "remediation": [
+              "Locate the CR2032 coin cell on the motherboard (often wrapped in yellow or black shrink tubing with a 2-pin molex header).",
+              "Replace with a fresh 3V CR2032 coin cell.",
+              "Re-enter BIOS and set correct date, time, and boot order."
+            ],
+            "urgency": "Routine",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_liquid_spill": {
+      "id": "q_liquid_spill",
+      "category": "power_battery",
+      "title": "Liquid Exposure History",
+      "question": "Has the laptop suffered any liquid spill (water, coffee, soda) or lived in a high-humidity environment?",
+      "why": "Liquid damage creates creeping galvanic corrosion that bridges power rails weeks or months after the incident.",
+      "options": [
+        {
+          "key": "no_liquid_contact",
+          "label": "Zero liquid contact; clean interior history",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "liquid_spilled_recently",
+          "label": "Yes, liquid was spilled onto keyboard or ports",
+          "is_healthy": false,
+          "penalty": 25,
+          "defect_description": "Liquid ingress with progressive copper corrosion",
+          "severity": "critical",
+          "estimated_cost_usd": "$50 - $250",
+          "leaf_diagnosis": {
+            "title": "Liquid Ingress & Active Motherboard Corrosion",
+            "issue": "Moisture combined with active electrical current causes rapid electrolytic corrosion, eating copper traces and shorting SMD capacitors under BGAs.",
+            "remediation": [
+              "DISCONNECT battery and charger immediately; DO NOT try to power on.",
+              "DO NOT place in rice (rice dust enters fans and traps moisture).",
+              "Disassemble completely, inspect Liquid Contact Indicators (LCIs).",
+              "Clean all green/white corrosion under a microscope using 99% isopropyl alcohol and ultrasonic cleaner."
+            ],
+            "urgency": "Critical",
+            "diy_friendly": false
+          }
+        }
+      ]
+    },
+    "q_tpm_secure_boot": {
+      "id": "q_tpm_secure_boot",
+      "category": "storage_boot",
+      "title": "TPM 2.0 & Secure Boot Status",
+      "question": "Does Windows 11 report 'TPM not detected' or fail to boot due to Secure Boot signature violations?",
+      "why": "Verifies hardware platform trust technology (fTPM / dTPM) required by modern operating systems.",
+      "options": [
+        {
+          "key": "tpm_active",
+          "label": "TPM 2.0 and Secure Boot are operational",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "tpm_missing_error",
+          "label": "TPM is missing in Device Manager or Secure Boot errors on boot",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Firmware TPM disabled or corrupted Platform Trust Technology",
+          "severity": "medium",
+          "estimated_cost_usd": "$0 - $30",
+          "leaf_diagnosis": {
+            "title": "Disabled or Corrupted TPM / Platform Trust Module",
+            "issue": "The Intel PTT (Platform Trust Technology) or AMD fTPM has become corrupted in the SPI flash chip or disabled in BIOS.",
+            "remediation": [
+              "Enter BIOS -> Security -> Enable Intel PTT / AMD fTPM and clear TPM keys.",
+              "Update laptop BIOS to the latest version to apply firmware TPM fixes.",
+              "Ensure UEFI boot mode is enabled rather than Legacy CSM."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_bios_password": {
+      "id": "q_bios_password",
+      "category": "storage_boot",
+      "title": "BIOS / Supervisor Lock",
+      "question": "Is the BIOS setup or boot process locked behind an unknown master password?",
+      "why": "Critical pre-purchase check; corporate locked laptops (Computrace / Supervisor lock) prevent boot drive modifications.",
+      "options": [
+        {
+          "key": "bios_unlocked",
+          "label": "BIOS is fully accessible with no passwords",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "bios_locked_supervisor",
+          "label": "BIOS prompts for password and locks out changes",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "Active BIOS supervisor password / Enterprise lock",
+          "severity": "high",
+          "estimated_cost_usd": "$20 - $70",
+          "leaf_diagnosis": {
+            "title": "BIOS Supervisor Lock / Enterprise Security Lock",
+            "issue": "A password is stored in non-volatile EEPROM/EC memory. On modern business laptops, pulling the CMOS battery will NOT clear this password.",
+            "remediation": [
+              "If purchased used, request the master password from the seller or previous IT department.",
+              "Check for master backdoor hash codes at bios-pw.org.",
+              "May require flashing a clean, unprovisioned BIOS dump to the SPI ROM using a programmer."
+            ],
+            "urgency": "High",
+            "diy_friendly": false
+          }
+        }
+      ]
+    },
+    "q_bitlocker_recovery": {
+      "id": "q_bitlocker_recovery",
+      "category": "storage_boot",
+      "title": "BitLocker Recovery Prompts",
+      "question": "Does Windows prompt for a 48-digit BitLocker recovery key on startup?",
+      "why": "Indicates PCR bank checksum changes caused by BIOS updates or TPM communication failure.",
+      "options": [
+        {
+          "key": "no_bitlocker_prompt",
+          "label": "Never prompts for BitLocker recovery keys",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "bitlocker_prompting",
+          "label": "Prompts for BitLocker key unexpectedly",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "BitLocker PCR validation failure or wiped TPM state",
+          "severity": "medium",
+          "estimated_cost_usd": "$0 - $40",
+          "leaf_diagnosis": {
+            "title": "BitLocker Integrity Check Triggered",
+            "issue": "The TPM detected a hardware modification, BIOS revision change, or boot order alteration that altered the Platform Configuration Registers (PCR).",
+            "remediation": [
+              "Log into your Microsoft Account at https://account.microsoft.com/devices/recoverykey to retrieve the 48-digit key.",
+              "Suspend BitLocker in Windows before performing any future BIOS updates.",
+              "Re-bind PCR banks in elevated terminal: `manage-bde -protectors -delete C: -type TPM` then `manage-bde -protectors -add C: -tpm`."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_smart_health": {
+      "id": "q_smart_health",
+      "category": "storage_boot",
+      "title": "SSD S.M.A.R.T. Health Status",
+      "question": "Do disk utilities (CrystalDiskInfo / smartctl) show 'Caution' or report bad reallocated sectors / percentage used wear > 90%?",
+      "why": "Early warning indicator before complete catastrophic NAND flash failure.",
+      "options": [
+        {
+          "key": "smart_good",
+          "label": "Status is 'Good' (100% or low wear, 0 bad sectors)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "smart_caution_or_bad",
+          "label": "Status shows 'Caution' or has reallocated sectors",
+          "is_healthy": false,
+          "penalty": 20,
+          "defect_description": "Degraded SSD NAND endurance or bad sector reallocations",
+          "severity": "high",
+          "estimated_cost_usd": "$35 - $90",
+          "leaf_diagnosis": {
+            "title": "Degraded Storage Drive (Failing S.M.A.R.T. Health)",
+            "issue": "The drive's spare reserve flash blocks are running out. Bad blocks can no longer be transparently remapped, leading to data corruption.",
+            "remediation": [
+              "Immediately clone or back up your entire drive to external storage.",
+              "Replace the SSD with a new NVMe PCIe Gen 4 SSD.",
+              "Do not trust the drive with critical unbacked-up data."
+            ],
+            "urgency": "High",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_ram_speed_xmp": {
+      "id": "q_ram_speed_xmp",
+      "category": "memory_performance",
+      "title": "RAM Speed & JEDEC Profile",
+      "question": "In Task Manager -> Performance -> Memory, is RAM running at its rated speed (e.g. 3200MHz / 4800MHz / 5600MHz)?",
+      "why": "Checks if mismatched RAM modules forced motherboard into fallback 2133MHz / 2400MHz baseline.",
+      "options": [
+        {
+          "key": "ram_full_speed",
+          "label": "Running at rated maximum speed",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "ram_slow_fallback",
+          "label": "Downclocked to base JEDEC speed (e.g. 2133MHz or 2400MHz)",
+          "is_healthy": true,
+          "penalty": 5,
+          "next_question": null
+        }
+      ]
+    },
+    "q_coil_whine": {
+      "id": "q_coil_whine",
+      "category": "thermals_cooling",
+      "title": "Inductor Coil Whine",
+      "question": "Do you hear a faint high-pitched electrical hissing, chirping, or buzzing from the keyboard area when moving the mouse or playing games?",
+      "why": "Physical vibration of copper wire coils inside surface-mount ferrite power inductors.",
+      "options": [
+        {
+          "key": "no_coil_whine",
+          "label": "Completely quiet electrical rails",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "audible_coil_whine",
+          "label": "Yes, audible high-pitched buzzing under GPU/CPU load",
+          "is_healthy": true,
+          "penalty": 5,
+          "defect_description": "Harmless acoustic vibration of motherboard VRM power inductors",
+          "severity": "low",
+          "estimated_cost_usd": "$0 (Harmless)",
+          "leaf_diagnosis": {
+            "title": "Motherboard VRM Inductor Coil Whine",
+            "issue": "High frequency switching current flowing through the CPU/GPU VRM inductors creates a magnetic field that physically vibrates the internal coils at audible audio frequencies.",
+            "remediation": [
+              "This is an acoustic nuisance but is 100% harmless to hardware life.",
+              "Disabling aggressive C-states (C1E) in BIOS can reduce pitch fluctuations.",
+              "Capping framerates in games eliminates extreme GPU coil whine spikes."
+            ],
+            "urgency": "Routine",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_touchscreen_ghost": {
+      "id": "q_touchscreen_ghost",
+      "category": "display_graphics",
+      "title": "Touchscreen Accuracy & Ghost Touches",
+      "question": "If your laptop has a touchscreen, does it experience 'ghost touches' (phantom circles clicking automatically)?",
+      "why": "Digitizer glass micro-fractures or electrostatic ground leakage across the touch matrix.",
+      "options": [
+        {
+          "key": "touch_normal_or_na",
+          "label": "Accurate tracking (or non-touch laptop)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "ghost_touches_occurring",
+          "label": "Phantom touches tap the screen involuntarily",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "Defective capacitive digitizer layer / electrostatic noise",
+          "severity": "medium",
+          "estimated_cost_usd": "$60 - $140",
+          "leaf_diagnosis": {
+            "title": "Defective Touchscreen Digitizer (Ghost Touches)",
+            "issue": "A warped screen bezel, hairline fracture in the capacitive ITO layer, or ungrounded AC charger is injecting false capacitive touch points.",
+            "remediation": [
+              "Test unplugged on battery power to rule out noisy ground from a cheap third-party charger.",
+              "Recalibrate touch in Windows Tablet PC settings.",
+              "If hardware fault persists, disable 'HID-compliant touch screen' in Device Manager to preserve mouse usability."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_stylus_pen": {
+      "id": "q_stylus_pen",
+      "category": "display_graphics",
+      "title": "Active Stylus / Pen Input",
+      "question": "If using an active pen (Wacom/MPP), does it track smoothly with pressure sensitivity and zero jitter?",
+      "why": "Checks electromagnetic resonance (EMR) or active electrostatic (AES) digitizer controller.",
+      "options": [
+        {
+          "key": "stylus_ok_or_na",
+          "label": "Works smoothly (or no stylus used)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "stylus_broken_jitter",
+          "label": "Erratic tracking, heavy line jitter, or no pressure sensitivity",
+          "is_healthy": false,
+          "penalty": 5,
+          "defect_description": "Stylus AAAA battery dead or worn pen tip",
+          "severity": "low",
+          "estimated_cost_usd": "$5 - $35",
+          "next_question": null
+        }
+      ]
+    },
+    "q_fingerprint_reader": {
+      "id": "q_fingerprint_reader",
+      "category": "peripherals_input",
+      "title": "Biometric Fingerprint Scanner",
+      "question": "Does the fingerprint sensor reliably log in with Windows Hello, or does it say 'Sensor unavailable'?",
+      "why": "Checks SPI/USB biometric daughterboard communication and Windows Biometric Framework.",
+      "options": [
+        {
+          "key": "fingerprint_ok_or_na",
+          "label": "Scans instantly and accurately (or laptop lacks sensor)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "fingerprint_failed_code10",
+          "label": "Fails to scan or shows yellow triangle 'Code 10' in Device Manager",
+          "is_healthy": false,
+          "penalty": 5,
+          "defect_description": "Biometric driver corruption or loose ribbon cable",
+          "severity": "low",
+          "estimated_cost_usd": "$15 - $35",
+          "next_question": null
+        }
+      ]
+    },
+    "q_sd_card_reader": {
+      "id": "q_sd_card_reader",
+      "category": "peripherals_input",
+      "title": "SD / MicroSD Card Slot",
+      "question": "When an SD card is inserted, does the laptop detect it and transfer files smoothly?",
+      "why": "Validates PCIe/USB Realtek/Genesys card reader controller and spring-loaded card lock.",
+      "options": [
+        {
+          "key": "sd_card_ok_or_na",
+          "label": "Reads and writes files properly (or laptop has no SD slot)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "sd_card_unrecognized",
+          "label": "Card is not recognized or spring mechanism won't click-lock",
+          "is_healthy": false,
+          "penalty": 5,
+          "defect_description": "Bent card reader spring pin or disabled controller",
+          "severity": "low",
+          "estimated_cost_usd": "$15 - $30",
+          "next_question": null
+        }
+      ]
+    },
+    "q_ethernet_rj45": {
+      "id": "q_ethernet_rj45",
+      "category": "connectivity_audio",
+      "title": "Wired RJ-45 Ethernet Port",
+      "question": "If your laptop has an RJ-45 Ethernet port, does it connect and establish Gigabit speeds with link lights?",
+      "why": "Validates physical magnetics and Realtek/Intel LAN PHY chip.",
+      "options": [
+        {
+          "key": "ethernet_ok_or_na",
+          "label": "Connects instantly with solid link lights (or no RJ-45 port)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "ethernet_broken_door",
+          "label": "Port drop-jaw door is snapped or cable won't latch",
+          "is_healthy": false,
+          "penalty": 5,
+          "defect_description": "Broken plastic RJ-45 hinge jaw or damaged contact pin",
+          "severity": "low",
+          "estimated_cost_usd": "$10 - $25",
+          "next_question": null
+        }
+      ]
+    },
+    "q_thunderbolt_dock": {
+      "id": "q_thunderbolt_dock",
+      "category": "peripherals_input",
+      "title": "Thunderbolt / Multi-Display Docking",
+      "question": "When connecting an external USB-C / Thunderbolt dock, do displays, Ethernet, and USB hubs enumerate reliably?",
+      "why": "Tests Intel Titan Ridge / Goshen Ridge Thunderbolt controller PCIe tunneling.",
+      "options": [
+        {
+          "key": "tb_dock_ok_or_na",
+          "label": "All dock functions enumerate smoothly (or no dock used)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "tb_dock_intermittent",
+          "label": "Dock constantly disconnects, flickers displays, or drops USB",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Thunderbolt firmware handshake failure or loose port solder",
+          "severity": "medium",
+          "estimated_cost_usd": "$20 - $70",
+          "next_question": null
+        }
+      ]
+    },
+    "q_gpu_mux_switch": {
+      "id": "q_gpu_mux_switch",
+      "category": "display_graphics",
+      "title": "Advanced Optimus / MUX Switch Transition",
+      "question": "On gaming laptops with a MUX switch, does the display switch between iGPU and dGPU without black-screening?",
+      "why": "Validates hardware display multiplexer IC routing eDP signals.",
+      "options": [
+        {
+          "key": "mux_switch_smooth",
+          "label": "Switches seamlessly between integrated and dedicated graphics",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "mux_switch_black_screen",
+          "label": "Screen goes black permanently during GPU mode switch",
+          "is_healthy": false,
+          "penalty": 15,
+          "defect_description": "MUX switch handshake failure / display driver deadlock",
+          "severity": "medium",
+          "estimated_cost_usd": "$0 - $40",
+          "leaf_diagnosis": {
+            "title": "Nvidia Advanced Optimus / MUX Switch Display Handshake Failure",
+            "issue": "The hardware display multiplexer failed to hand over the eDP timing clock when switching display control between Intel/AMD iGPU and Nvidia dGPU.",
+            "remediation": [
+              "Update both the integrated graphics driver and dedicated Nvidia driver to matching WHQL releases.",
+              "In BIOS, toggle graphics mode from 'Dynamic / Advanced Optimus' to 'Discrete Only' as a temporary workaround.",
+              "Update laptop OEM BIOS firmware for display MUX timing fixes."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_audio_microphone_echo": {
+      "id": "q_audio_microphone_echo",
+      "category": "connectivity_audio",
+      "title": "Microphone Noise Cancellation & Echo",
+      "question": "During calls (Zoom, Teams), do other people complain of loud buzzing, robot voice, or deafening background hiss?",
+      "why": "Detects defective dual-array digital MEMS microphone capsules in the screen bezel.",
+      "options": [
+        {
+          "key": "mic_crystal_clear",
+          "label": "Microphone audio is crisp and intelligible",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "mic_buzz_or_silent",
+          "label": "Loud electrical hiss, screeching echo, or muffled audio",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Failing digital MEMS microphone or blocked pinhole port",
+          "severity": "low",
+          "estimated_cost_usd": "$10 - $35",
+          "next_question": null
+        }
+      ]
+    },
+    "q_lid_sensor_magnet": {
+      "id": "q_lid_sensor_magnet",
+      "category": "peripherals_input",
+      "title": "Lid Close / Sleep Sensor (Hall Effect)",
+      "question": "Does the laptop screen stay on when closed, or suddenly go to sleep while open if you rest your hands or a watch on the palm rest?",
+      "why": "Magnetic jewelry or failing Hall effect magnetic switches falsely trigger laptop sleep mode.",
+      "options": [
+        {
+          "key": "lid_sensor_normal",
+          "label": "Sleeps properly when closed, stays awake when open",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "lid_sensor_falsing",
+          "label": "Sleeps unexpectedly while open or stays awake when lid is closed",
+          "is_healthy": false,
+          "penalty": 10,
+          "defect_description": "Misaligned Hall-effect magnetic lid switch or smart watch magnet interference",
+          "severity": "low",
+          "estimated_cost_usd": "$0 - $30",
+          "leaf_diagnosis": {
+            "title": "Hall Effect Magnetic Lid Sensor Misbehavior",
+            "issue": "Laptops use a Hall effect sensor on the motherboard paired with a neodymium magnet in the screen bezel to detect when the lid is closed. Magnetic smartwatch bands or misplaced magnets trigger false sleep commands.",
+            "remediation": [
+              "Remove magnetic Apple Watch / smartwatch bands or bracelets from your wrists while typing.",
+              "Inspect screen bezel top edge to verify the small magnet has not dislodged.",
+              "In Windows Power Options, set 'When I close the lid' to 'Do Nothing' to verify."
+            ],
+            "urgency": "Routine",
+            "diy_friendly": true
+          }
+        }
+      ]
+    },
+    "q_chassis_screws": {
+      "id": "q_chassis_screws",
+      "category": "connectivity_audio",
+      "title": "Bottom Panel Screws & Rubber Feet",
+      "question": "Are all bottom chassis screws present and tight, and are the rubber elevation feet intact?",
+      "why": "Missing rubber feet choke bottom airflow intakes; missing screws cause motherboard PCB flex.",
+      "options": [
+        {
+          "key": "screws_feet_intact",
+          "label": "All screws and rubber feet are fully intact",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": null
+        },
+        {
+          "key": "missing_screws_or_feet",
+          "label": "Several screws are stripped/missing, or rubber feet are gone",
+          "is_healthy": true,
+          "penalty": 5,
+          "defect_description": "Missing bottom panel screws or rubber airflow risers",
+          "severity": "low",
+          "estimated_cost_usd": "$5 - $12",
+          "next_question": null
+        }
+      ]
+    }
+  }
+}
