@@ -70,70 +70,116 @@ def run_emergency_cli(engine: ExpertInferenceEngine):
             print("Invalid input. Please enter a valid number.")
 
 
-def run_audit_cli(engine: ExpertInferenceEngine, quick_healthy: bool = False):
-    print("\n--- [🔍 50-Point Subsystem Hardware Audit] ---")
-    print("Systematic inspection across Power, Display, Thermals, Boot, RAM, and Ports.\n")
+def run_tree_audit_cli(engine: ExpertInferenceEngine, quick_healthy: bool = False):
+    print("\n--- [🔍 Cascading Decision-Tree Subsystem Audit] ---")
+    print("Hierarchical traversal across all 7 hardware domains with early critical intercept.\n")
 
-    questions = engine.get_audit_questions()
-    answers = {}
+    state, step_res = engine.start_tree_audit()
 
-    current_cat = None
-    for idx, q in enumerate(questions, 1):
-        cat_name = engine.categories.get(q["category"], q["category"])
-        if cat_name != current_cat:
-            current_cat = cat_name
-            print(f"\n>>> Category: {current_cat.upper()} <<<")
+    while True:
+        if step_res.status == "critical_intercept":
+            crit = step_res.critical_leaf
+            print("\n" + "!" * 65)
+            print(f"🚨 CRITICAL HARDWARE FAULT DETECTED: {crit['title']}")
+            print(f"Subsystem: {step_res.subsystem_name} | Urgency: [{crit.get('urgency', 'CRITICAL')}]")
+            print(f"Root Issue: {crit['issue']}")
+            print(f"Est. Repair: {crit.get('cost', 'Varies')}")
+            print("!" * 65)
+            print("\nWhat would you like to do?")
+            print("  (1) 🛑 Terminate immediately & generate Emergency Repair Plan")
+            print("  (2) ⏩ Continue auditing remaining subsystems")
 
-        print(f"\n[{idx}/52] {q['title']}: {q['question']}")
-        opts = q["options"]
+            if quick_healthy:
+                step_res = engine.advance_tree_audit(state, action="continue_critical")
+                continue
+
+            while True:
+                crit_choice = input("Select [1 or 2]: ").strip()
+                if crit_choice == "1":
+                    step_res = engine.advance_tree_audit(state, action="terminate_critical")
+                    break
+                elif crit_choice == "2":
+                    step_res = engine.advance_tree_audit(state, action="continue_critical")
+                    break
+                print("Invalid choice. Please enter 1 or 2.")
+            continue
+
+        if step_res.status == "concluded_early":
+            res: DiagnosticResult = step_res.result
+            print("\n" + "=" * 65)
+            print(f"🛑 AUDIT TERMINATED EARLY: {res.title}")
+            print("=" * 65)
+            print(f"Urgency:        [{res.urgency.upper()}]")
+            print(f"Est. Cost:      {res.estimated_cost}")
+            print(f"\nRoot Cause:\n{res.issue}")
+            print("\nStep-by-Step Remediation Plan:")
+            for idx, step in enumerate(res.remediation, 1):
+                print(f"  {idx}. {step}")
+            print("\n--- [Audit Traversal Trace Prior to Termination] ---")
+            for t in res.history_trace:
+                print(f"  Step {t['step']} ({t['subsystem']}) Depth {t['depth']}: {t['title']} -> '{t['chosen_label']}'")
+            print("=" * 65 + "\n")
+            break
+
+        if step_res.status == "concluded_full":
+            scorecard: AuditScorecard = step_res.scorecard
+            print("\n" + "=" * 65)
+            print("📊 50-POINT CASCADING AUDIT SCORECARD COMPLETE")
+            print("=" * 65)
+            print(f"Overall Health Score:  {scorecard.total_score}/100")
+            print(f"Letter Grade:          [{scorecard.letter_grade}]")
+            print(f"Condition Verdict:     {scorecard.verdict}")
+            print(f"Est. Repair Expense:   ${scorecard.total_estimated_repair_min} - ${scorecard.total_estimated_repair_max}")
+            print("\nCategory Breakdown:")
+            for cat_id, score in scorecard.category_scores.items():
+                cat_label = engine.categories.get(cat_id, cat_id)
+                print(f"  - {cat_label:<35}: {score:>3}/100")
+
+            if scorecard.flagged_defects:
+                print(f"\nFlagged Defects ({len(scorecard.flagged_defects)}):")
+                for d in scorecard.flagged_defects:
+                    print(f"  • [{d['severity']}] {d['title']}: {d['defect']} (Est: {d['cost']})")
+            else:
+                print("\n✓ No defects detected! System passed all audited subsystems.")
+            print("=" * 65 + "\n")
+            break
+
+        node = step_res.current_node
+        sub_name = step_res.subsystem_name
+        depth = step_res.depth_level
+        depth_tag = "Level 1: Gateway Triage" if depth == 1 else f"Level {depth}: Component Deep-Dive"
+
+        print(f"\n[Subsystem {step_res.subsystem_index + 1}/7: {sub_name}] ({depth_tag})")
+        print(f"Question: {node['question']}")
+        print(f"💡 Why this is asked: {node.get('why', '')}")
+
+        opts = node["options"]
         for opt_idx, opt in enumerate(opts, 1):
-            health_tag = "✓ Healthy" if opt.get("is_healthy", True) else f"⚠ Penalty -{opt.get('penalty', 0)}"
-            print(f"  ({opt_idx}) {opt['label']} [{health_tag}]")
+            h_tag = "✓ Nominal" if opt.get("is_healthy", True) else f"⚠ Fault / Issue"
+            print(f"  ({opt_idx}) {opt['label']} [{h_tag}]")
 
         if quick_healthy:
-            # Default to first healthy option
             healthy_opt = next((o for o in opts if o.get("is_healthy", True)), opts[0])
-            answers[q["id"]] = healthy_opt["key"]
-            print(f"  -> Selected default: {healthy_opt['label']}")
+            step_res = engine.advance_tree_audit(state, action="answer", answer_key=healthy_opt["key"])
             continue
 
         while True:
-            choice = input(f"Choose [1-{len(opts)}] (Enter for 1): ").strip()
-            if not choice:
-                choice = "1"
+            choice = input(f"Choose [1-{len(opts)}] or 'q' to abort: ").strip().lower()
+            if choice == 'q':
+                print("Audit aborted.")
+                return
             if choice.isdigit() and 1 <= int(choice) <= len(opts):
                 chosen_opt = opts[int(choice) - 1]
-                answers[q["id"]] = chosen_opt["key"]
+                step_res = engine.advance_tree_audit(state, action="answer", answer_key=chosen_opt["key"])
                 break
             print("Invalid input.")
-
-    scorecard: AuditScorecard = engine.evaluate_audit(answers)
-    print("\n" + "=" * 65)
-    print("📊 50-POINT AUDIT SCORECARD COMPLETE")
-    print("=" * 65)
-    print(f"Overall Health Score:  {scorecard.total_score}/100")
-    print(f"Letter Grade:          [{scorecard.letter_grade}]")
-    print(f"Condition Verdict:     {scorecard.verdict}")
-    print(f"Est. Repair Expense:   ${scorecard.total_estimated_repair_min} - ${scorecard.total_estimated_repair_max}")
-    print("\nCategory Breakdown:")
-    for cat_id, score in scorecard.category_scores.items():
-        cat_label = engine.categories.get(cat_id, cat_id)
-        print(f"  - {cat_label:<35}: {score:>3}/100")
-
-    if scorecard.flagged_defects:
-        print(f"\nFlagged Defects ({len(scorecard.flagged_defects)}):")
-        for d in scorecard.flagged_defects:
-            print(f"  • [{d['severity']}] {d['title']}: {d['defect']} (Est: {d['cost']})")
-    else:
-        print("\n✓ No defects detected! System is in immaculate operational condition.")
-    print("=" * 65 + "\n")
 
 
 def main():
     parser = argparse.ArgumentParser(description="LapDoc - Laptop Diagnostic Expert System")
     parser.add_argument("--emergency", action="store_true", help="Launch directly into Emergency Fast-Triage")
-    parser.add_argument("--audit", action="store_true", help="Launch directly into 50-Point Audit")
-    parser.add_argument("--audit-quick", action="store_true", help="Run 50-Point Audit with healthy defaults for quick check")
+    parser.add_argument("--audit", action="store_true", help="Launch directly into Cascading Tree Audit")
+    parser.add_argument("--audit-quick", action="store_true", help="Run Cascading Tree Audit with healthy defaults for quick check")
     args = parser.parse_args()
 
     engine = ExpertInferenceEngine()
@@ -143,10 +189,10 @@ def main():
         run_emergency_cli(engine)
         return
     elif args.audit:
-        run_audit_cli(engine, quick_healthy=False)
+        run_tree_audit_cli(engine, quick_healthy=False)
         return
     elif args.audit_quick:
-        run_audit_cli(engine, quick_healthy=True)
+        run_tree_audit_cli(engine, quick_healthy=True)
         return
 
     while True:
