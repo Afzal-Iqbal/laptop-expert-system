@@ -28,6 +28,20 @@ class AuditScorecard:
     summary_markdown: str
 
 
+@dataclass
+class TreeAuditStepResult:
+    status: str  # "in_progress", "critical_intercept", "concluded_early", "concluded_full"
+    current_node: Optional[Dict[str, Any]] = None
+    subsystem_index: int = 0
+    subsystem_key: str = ""
+    subsystem_name: str = ""
+    depth_level: int = 1
+    critical_leaf: Optional[Dict[str, Any]] = None
+    result: Optional[DiagnosticResult] = None
+    scorecard: Optional[AuditScorecard] = None
+    trace: List[Dict[str, Any]] = field(default_factory=list)
+
+
 class ExpertInferenceEngine:
     def __init__(self, kb_path: Optional[str] = None):
         if kb_path is None:
@@ -39,6 +53,8 @@ class ExpertInferenceEngine:
         self.nodes = self.data["nodes"]
         self.emergency_entry = self.data.get("emergency_entry_node", "q_emergency_triage")
         self.categories = self.metadata.get("categories", {})
+        self.pipeline = self.metadata.get("subsystem_pipeline", list(self.categories.keys()))
+        self.gateways = self.metadata.get("subsystem_gateways", {})
 
     def get_node(self, node_id: str) -> Optional[Dict[str, Any]]:
         return self.nodes.get(node_id)
@@ -266,3 +282,154 @@ class ExpertInferenceEngine:
                 lines.append(f"  - *Defect:* {d['defect']}")
                 lines.append(f"  - *Estimated Cost:* {d['cost']}")
         return "\n".join(lines)
+
+    def start_tree_audit(self) -> tuple[Dict[str, Any], TreeAuditStepResult]:
+        first_sub = self.pipeline[0]
+        gateway_node_id = self.gateways.get(first_sub, "q_power_state")
+        first_node = self.get_node(gateway_node_id)
+        state = {
+            "pipeline_index": 0,
+            "current_node_id": gateway_node_id,
+            "depth_level": 1,
+            "answers": {},
+            "trace": [],
+            "pending_critical": None,
+            "critical_intercepted": []
+        }
+        step_res = TreeAuditStepResult(
+            status="in_progress",
+            current_node=first_node,
+            subsystem_index=0,
+            subsystem_key=first_sub,
+            subsystem_name=self.categories.get(first_sub, first_sub),
+            depth_level=1,
+            trace=[]
+        )
+        return state, step_res
+
+    def advance_tree_audit(self, state: Dict[str, Any], action: str = "answer", answer_key: Optional[str] = None) -> TreeAuditStepResult:
+        if action == "terminate_critical":
+            critical = state.get("pending_critical") or {}
+            diag = DiagnosticResult(
+                title=critical.get("title", "Critical Hardware Defect"),
+                issue=critical.get("issue", "A critical hardware fault was detected requiring immediate shutdown or service."),
+                remediation=critical.get("remediation", ["Seek certified technician board repair."]),
+                urgency=critical.get("urgency", "Critical"),
+                diy_friendly=critical.get("diy_friendly", False),
+                estimated_cost=critical.get("cost", "Varies"),
+                history_trace=state.get("trace", [])
+            )
+            return TreeAuditStepResult(
+                status="concluded_early",
+                result=diag,
+                trace=state.get("trace", [])
+            )
+
+        if action == "continue_critical":
+            critical = state.get("pending_critical")
+            if critical:
+                state["critical_intercepted"].append(critical)
+                state["pending_critical"] = None
+
+            state["pipeline_index"] += 1
+            return self._advance_to_next_subsystem_or_conclude(state)
+
+        if action == "answer":
+            if not answer_key:
+                raise ValueError("answer_key is required when action is 'answer'")
+
+            node = self.get_node(state["current_node_id"])
+            if not node:
+                raise ValueError(f"Invalid current_node_id '{state['current_node_id']}'")
+
+            matched_opt = next((o for o in node["options"] if o["key"] == answer_key), None)
+            if not matched_opt:
+                raise ValueError(f"Option key '{answer_key}' not valid for node '{node['id']}'")
+
+            state["answers"][node["id"]] = answer_key
+
+            current_sub_key = self.pipeline[state["pipeline_index"]]
+            trace_entry = {
+                "step": len(state["trace"]) + 1,
+                "subsystem": self.categories.get(current_sub_key, current_sub_key),
+                "depth": state["depth_level"],
+                "node_id": node["id"],
+                "title": node["title"],
+                "question": node["question"],
+                "chosen_label": matched_opt["label"],
+                "is_healthy": matched_opt.get("is_healthy", True),
+                "why": node.get("why", "")
+            }
+            state["trace"].append(trace_entry)
+
+            leaf = matched_opt.get("leaf_diagnosis")
+            if leaf:
+                if leaf.get("urgency") == "Critical":
+                    state["pending_critical"] = {
+                        **leaf,
+                        "cost": matched_opt.get("estimated_cost_usd", "Varies"),
+                        "node_title": node["title"],
+                        "category": self.categories.get(current_sub_key, current_sub_key)
+                    }
+                    return TreeAuditStepResult(
+                        status="critical_intercept",
+                        current_node=node,
+                        subsystem_index=state["pipeline_index"],
+                        subsystem_key=current_sub_key,
+                        subsystem_name=self.categories.get(current_sub_key, current_sub_key),
+                        depth_level=state["depth_level"],
+                        critical_leaf=state["pending_critical"],
+                        trace=state["trace"]
+                    )
+                else:
+                    state["pipeline_index"] += 1
+                    return self._advance_to_next_subsystem_or_conclude(state)
+
+            nxt = matched_opt.get("next_question")
+            if nxt:
+                nxt_node = self.get_node(nxt)
+                if nxt_node and nxt_node.get("category") == node.get("category"):
+                    state["current_node_id"] = nxt
+                    state["depth_level"] += 1
+                    return TreeAuditStepResult(
+                        status="in_progress",
+                        current_node=nxt_node,
+                        subsystem_index=state["pipeline_index"],
+                        subsystem_key=current_sub_key,
+                        subsystem_name=self.categories.get(current_sub_key, current_sub_key),
+                        depth_level=state["depth_level"],
+                        trace=state["trace"]
+                    )
+                else:
+                    state["pipeline_index"] += 1
+                    return self._advance_to_next_subsystem_or_conclude(state)
+            else:
+                state["pipeline_index"] += 1
+                return self._advance_to_next_subsystem_or_conclude(state)
+
+        raise ValueError(f"Unknown action: '{action}'")
+
+    def _advance_to_next_subsystem_or_conclude(self, state: Dict[str, Any]) -> TreeAuditStepResult:
+        if state["pipeline_index"] >= len(self.pipeline):
+            scorecard = self.evaluate_audit(state["answers"])
+            return TreeAuditStepResult(
+                status="concluded_full",
+                scorecard=scorecard,
+                trace=state["trace"]
+            )
+        else:
+            next_sub = self.pipeline[state["pipeline_index"]]
+            next_gateway = self.gateways.get(next_sub)
+            state["current_node_id"] = next_gateway
+            state["depth_level"] = 1
+            node = self.get_node(next_gateway)
+            return TreeAuditStepResult(
+                status="in_progress",
+                current_node=node,
+                subsystem_index=state["pipeline_index"],
+                subsystem_key=next_sub,
+                subsystem_name=self.categories.get(next_sub, next_sub),
+                depth_level=1,
+                trace=state["trace"]
+            )
+
