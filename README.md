@@ -8,7 +8,9 @@
 
 1. **Dual Operating Modes**:
    - **⚡ Emergency Fast-Triage**: A Directed Acyclic Graph (DAG) with greedy conditional pruning and **early-exit resolution**. Diagnoses acute issues (blown backlight fuse, short circuits, dead RAM, thermal runaway) in just **2 to 8 questions**.
-   - **🔍 50-Point Subsystem Audit**: An exhaustive inspection across 7 hardware domains (Power & Battery, Display & GPU, Thermals & Cooling, Storage & Boot, RAM & Performance, Peripherals & I/O, Audio & Connectivity) providing a comprehensive **Health Score (0-100%)**, a **Condition Grade (A+ to F)**, and estimated repair expenses.
+   - **🔍 Cascading Decision-Tree Subsystem Audit**: A hierarchical tree audit traversing all 7 hardware subsystems in an ordered pipeline. Level 1 starts with gateway sanity checks; when symptoms are observed, the tree drills down into Level 2 & Level 3 deep technical checks. If a critical component failure (e.g. short circuit, swollen battery, dead GPU) is discovered, the user is offered an **interactive intercept fork**:
+     - 🛑 *Terminate immediately & view emergency repair plan*
+     - ⏩ *Continue auditing the remaining subsystems to compile a complete bill of defects*
 
 2. **MYCIN-Style Explanation Facility**:
    - **"Why is the system asking this?"**: Transparently reveals what fault hypothesis is being tested or eliminated at every step.
