@@ -11,6 +11,24 @@
       "memory_performance": "Memory & System Performance",
       "peripherals_input": "Keyboard, Touchpad & I/O Ports",
       "connectivity_audio": "Audio, Wi-Fi & Chassis Integrity"
+    },
+    "subsystem_pipeline": [
+      "power_battery",
+      "display_graphics",
+      "thermals_cooling",
+      "storage_boot",
+      "memory_performance",
+      "peripherals_input",
+      "connectivity_audio"
+    ],
+    "subsystem_gateways": {
+      "power_battery": "q_power_state",
+      "display_graphics": "q_display_illumination",
+      "thermals_cooling": "q_fan_noise",
+      "storage_boot": "q_boot_outcome",
+      "memory_performance": "q_post_beeps",
+      "peripherals_input": "q_keyboard_keys",
+      "connectivity_audio": "q_wifi_reception"
     }
   },
   "emergency_entry_node": "q_emergency_triage",

@@ -69,3 +69,17 @@ def test_dag_path_reachability(kb_data):
                 queue.append(nxt)
 
     assert len(visited) > 10, "Emergency traversal tree should reach multiple branches"
+
+def test_subsystem_pipeline_metadata(kb_data):
+    meta = kb_data["metadata"]
+    assert "subsystem_pipeline" in meta
+    assert "subsystem_gateways" in meta
+    pipeline = meta["subsystem_pipeline"]
+    gateways = meta["subsystem_gateways"]
+    assert len(pipeline) == 7
+    nodes = kb_data["nodes"]
+    for cat in pipeline:
+        assert cat in gateways, f"Missing gateway for category {cat}"
+        gw_node_id = gateways[cat]
+        assert gw_node_id in nodes, f"Gateway node {gw_node_id} not found in nodes"
+
