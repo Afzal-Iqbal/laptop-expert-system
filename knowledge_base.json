@@ -179,9 +179,16 @@
       "why": "Many modern laptops integrate the power button into the keyboard matrix; a spilled beverage or severed ribbon cable disables the power trigger.",
       "options": [
         {
-          "key": "button_normal",
-          "label": "Button clicks normally, but laptop still will not turn on",
+          "key": "button_normal_healthy",
+          "label": "Button clicks normally and powers on laptop reliably",
           "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_charging_behavior"
+        },
+        {
+          "key": "button_clicks_no_power",
+          "label": "Button clicks normally, but laptop still will not turn on",
+          "is_healthy": false,
           "penalty": 15,
           "defect_description": "Internal Embedded Controller (EC) or BIOS failure",
           "severity": "critical",
@@ -404,6 +411,13 @@
       "why": "If faint image is visible, the LCD panel and GPU work fine, but the LED backlight fuse or inverter has blown.",
       "options": [
         {
+          "key": "screen_normal_na",
+          "label": "Not Applicable (Screen displays normally with backlight)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_screen_flicker"
+        },
+        {
           "key": "faint_image_seen",
           "label": "Yes! I can faintly see windows/text under the bright flashlight",
           "is_healthy": false,
@@ -442,6 +456,13 @@
       "question": "When you plug the laptop into an external monitor or TV via HDMI / Type-C, does an image appear on the external screen?",
       "why": "Pinpoints whether the GPU is alive and outputting frames, isolating the issue to the internal panel/cable vs. system board.",
       "options": [
+        {
+          "key": "external_not_needed_internal_ok",
+          "label": "Not Applicable (Internal screen working fine)",
+          "is_healthy": true,
+          "penalty": 0,
+          "next_question": "q_screen_flicker"
+        },
         {
           "key": "external_works",
           "label": "YES! External monitor shows full normal desktop",
