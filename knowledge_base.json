@@ -156,10 +156,27 @@
                 "confidence": 0.3,
                 "differentiator": "Disconnect ribbon cables to side I/O daughterboards and re-test."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Guarded - Professional Component-Level Board Repair Required",
+            "prescription": [
+              "Rx 1: Perform a hard EC reset: Disconnect charger, hold power button down for 45 seconds.",
+              "Rx 2: If internal battery is accessible, disconnect battery and run on AC adapter only.",
+              "Rx 3: Inspect USB ports for physically bent or bridged metal pins causing 5V shorts.",
+              "Rx 4: If behavior persists, board-level repair or motherboard replacement is required."
             ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "Flea Power Hard Reset (Capacitor Drain)",
+        "instructions": [
+          "Unplug the AC power adapter and disconnect all USB mice, flash drives, and docks.",
+          "Press and hold the power button down firmly for 45-60 seconds without letting go.",
+          "Reconnect the AC adapter directly to a verified wall outlet and press the power button once."
+        ],
+        "expected_observation": "System booting indicates a cleared EC power rail latch; shutting off after 1-3 seconds indicates an active motherboard power rail short."
+      }
     },
     "q_charger_led": {
       "id": "q_charger_led",
@@ -200,6 +217,14 @@
                 "confidence": 0.45,
                 "differentiator": "Verify AC wall cord connectivity with DMM."
               }
+            ],
+            "is_common": true,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Test the wall outlet with a known working lamp or phone charger.",
+              "Rx 2: Test with an alternate OEM charger with matching voltage and amperage rating.",
+              "Rx 3: Check the DC barrel / Type-C cable for frayed wires or bent internal pins.",
+              "Rx 4: Replace the modular DC-in harness cable if the laptop uses a cable-style jack."
             ]
           }
         },
@@ -242,10 +267,26 @@
                 "confidence": 0.45,
                 "differentiator": "Check for 3-5 or 4-2 blink sequences."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Count the exact sequence of blinks (e.g., number of amber vs white blinks).",
+              "Rx 2: Look up the diagnostic code in your laptop manufacturer's service manual.",
+              "Rx 3: Reseat memory modules if the blink code points to memory fault.",
+              "Rx 4: Perform a CMOS/RTC battery clear."
             ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "DC-In Port & Charger Optical Inspection",
+        "instructions": [
+          "Inspect the charger barrel plug or USB-C connector for bent pins, scorch marks, or loose wobble.",
+          "Plug the AC adapter firmly into the laptop and observe the LED status light next to the charging port or power button."
+        ],
+        "expected_observation": "No LED light indicates a dead AC adapter or disconnected DC-in jack; rhythmic blinking indicates an OEM motherboard error code."
+      }
     },
     "q_power_button_feel": {
       "id": "q_power_button_feel",
@@ -292,6 +333,13 @@
                 "confidence": 0.4,
                 "differentiator": "Reseat power button ribbon cable."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Guarded - Professional Component-Level Board Repair Required",
+            "prescription": [
+              "Rx 1: Unplug charger and battery, hold power button 60 seconds to drain capacitors.",
+              "Rx 2: Disconnect the coin-cell CMOS battery for 15 minutes to reset the BIOS state.",
+              "Rx 3: Reflash the BIOS chip using a hardware programmer (CH341A) or send for board diagnosis."
             ]
           }
         },
@@ -314,7 +362,13 @@
             "diy_friendly": true,
             "certainty_factor": 0.95,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": true,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Replace the small power button sub-board or the top-case keyboard assembly.",
+              "Rx 2: If keyboard-integrated, test by bridging the power pins on the motherboard power connector."
+            ]
           }
         }
       ]
@@ -364,6 +418,13 @@
                 "confidence": 0.4,
                 "differentiator": "Run OEM battery calibration cycle in UEFI diagnostics."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Open Device Manager -> Batteries -> Uninstall 'Microsoft ACPI-Compliant Control Method Battery' -> Restart.",
+              "Rx 2: Check battery health report in terminal (`powercfg /batteryreport` on Windows or `upower` on Linux).",
+              "Rx 3: Check if manufacturer battery conservation mode (e.g. Lenovo Vantage 60% cap) is active."
             ]
           }
         },
@@ -386,7 +447,13 @@
             "diy_friendly": true,
             "certainty_factor": 0.95,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": true,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Replace internal battery pack with a genuine OEM replacement.",
+              "Rx 2: Inspect battery connector pins for corrosion or bent terminals."
+            ]
           }
         }
       ]
@@ -459,10 +526,27 @@
             "diy_friendly": true,
             "certainty_factor": 1.0,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": true,
+            "prognosis": "Critical Safety Hazard - Immediate Battery Removal Required",
+            "prescription": [
+              "Rx 1: STOP using and STOP charging the laptop immediately.",
+              "Rx 2: Safely power down the device.",
+              "Rx 3: Carefully unscrew bottom cover and remove swollen battery pack; dispose at certified e-waste facility.",
+              "Rx 4: DO NOT puncture, bend, or crush the battery."
+            ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "Chassis Deformation & Trackpad Swelling Check",
+        "instructions": [
+          "Place the laptop on a completely flat, level desk or tabletop.",
+          "Press down gently on opposite diagonal corners to see if the chassis rocks or wobbles.",
+          "Inspect the trackpad to see if it is pushed upward, uneven, or difficult to click physically."
+        ],
+        "expected_observation": "A raised trackpad, separating chassis seam, or wobbly base indicates hazardous lithium-ion pouch swelling requiring immediate removal."
+      }
     },
     "q_usbc_charging": {
       "id": "q_usbc_charging",
@@ -508,6 +592,13 @@
                 "confidence": 0.4,
                 "differentiator": "Test with an alternate 100W USB-C cable."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Inspect USB-C port internally with flashlight for lint or bent pins.",
+              "Rx 2: Test with a known-good 65W+ USB-PD 3.0 charger and E-Marked 5A cable.",
+              "Rx 3: Update BIOS/EC firmware to resolve known USB-PD handshake timeouts."
             ]
           }
         }
@@ -579,6 +670,13 @@
                 "confidence": 0.35,
                 "differentiator": "Multimeter check for 3.3V at pin 20-22 of LCD connector."
               }
+            ],
+            "is_common": true,
+            "prognosis": "Fair - Authorized Service Center Hardware Replacement",
+            "prescription": [
+              "Rx 1: Often caused by plugging in or unplugging the screen ribbon cable while battery was connected.",
+              "Rx 2: Test continuity of the backlight SMD fuse on the motherboard with a multimeter.",
+              "Rx 3: If fuse is intact, replace the LCD panel or the eDP cable."
             ]
           }
         },
@@ -592,7 +690,16 @@
           "estimated_cost_usd": "$50 - $200",
           "next_question": "q_external_monitor"
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "Smartphone Flashlight Screen Test",
+        "instructions": [
+          "Turn on the laptop in a dimly lit or dark room.",
+          "Turn on your smartphone flashlight and hold it 2 inches away from the laptop screen.",
+          "Angle the beam at 45 degrees across the screen and look closely for faint desktop icons, text, or a mouse pointer."
+        ],
+        "expected_observation": "A faint ghost image proves the LCD matrix and GPU work, but the display LED backlight fuse/circuit has blown."
+      }
     },
     "q_external_monitor": {
       "id": "q_external_monitor",
@@ -639,6 +746,13 @@
                 "confidence": 0.55,
                 "differentiator": "Check for continuity while flexing display hinge."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Open bottom panel and verify internal display ribbon cable is securely seated in the motherboard latch.",
+              "Rx 2: Inspect ribbon cable for wear or crimping near the hinge.",
+              "Rx 3: Replace the internal LCD screen panel (match model number on back of panel)."
             ]
           }
         },
@@ -673,10 +787,26 @@
                 "confidence": 0.45,
                 "differentiator": "Crisis BIOS recovery USB key flash required."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Perform hard EC reset: unplug charger, hold power button for 60 seconds.",
+              "Rx 2: Reseat RAM modules or test with one stick in slot 1.",
+              "Rx 3: Check Caps Lock key: if LED does not toggle when pressed, CPU/BIOS has halted."
             ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "External Video Bypass Check",
+        "instructions": [
+          "Connect an HDMI or USB-C cable from the laptop to an external desktop monitor or television.",
+          "Turn on both devices.",
+          "Press Windows Key + P (or Fn + Display Key) to cycle through display projection modes."
+        ],
+        "expected_observation": "A crisp picture on the external display proves the motherboard GPU and RAM are functioning, isolating the fault to the internal laptop screen assembly."
+      }
     },
     "q_screen_flicker": {
       "id": "q_screen_flicker",
@@ -712,10 +842,25 @@
             "diy_friendly": true,
             "certainty_factor": 0.92,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Order a replacement eDP video cable matching your exact laptop model.",
+              "Rx 2: Remove screen bezel and bottom chassis to route and install the new harness.",
+              "Rx 3: Verify hinge tension is not overly tight."
+            ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "Display Hinge Flexion Test",
+        "instructions": [
+          "With the laptop powered on, slowly tilt the screen back and forth between 45 and 120 degrees.",
+          "Gently apply a light torsional twist to the top corners of the screen lid with both hands."
+        ],
+        "expected_observation": "Flickering or color distortion that changes or disappears at specific hinge angles indicates a pinched or damaged internal eDP video ribbon cable."
+      }
     },
     "q_gpu_artifacts": {
       "id": "q_gpu_artifacts",
@@ -762,6 +907,13 @@
                 "confidence": 0.4,
                 "differentiator": "Boot in Safe Mode; clean reinstall via DDU."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Fair - Authorized Service Center Hardware Replacement",
+            "prescription": [
+              "Rx 1: Perform a clean GPU driver reinstall using Display Driver Uninstaller (DDU) in Safe Mode.",
+              "Rx 2: Underclock GPU core and memory clocks by 100MHz using MSI Afterburner to test stability.",
+              "Rx 3: If artifacts persist in BIOS, hardware BGA reballing or board replacement is required."
             ]
           }
         }
@@ -805,7 +957,13 @@
             "diy_friendly": true,
             "certainty_factor": 1.0,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Connect to external monitor to verify GPU output is unaffected.",
+              "Rx 2: Replace internal LCD panel with compatible OEM replacement (check 30-pin vs 40-pin eDP connector)."
+            ]
           }
         }
       ]
@@ -855,6 +1013,13 @@
                 "confidence": 0.4,
                 "differentiator": "Blow clean with compressed air and spin fan manually."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Open bottom panel and inspect fan for hair, debris, or loose cables rubbing against blades.",
+              "Rx 2: Clean with compressed air while holding the fan blades still (prevent back-EMF).",
+              "Rx 3: Replace the cooling fan assembly (readily available OEM part for $15–$30)."
             ]
           }
         },
@@ -889,10 +1054,26 @@
                 "confidence": 0.35,
                 "differentiator": "Fan motor functional when tested with 5V external power."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Check if fan connector is disconnected from the motherboard.",
+              "Rx 2: Replace the defective fan unit immediately.",
+              "Rx 3: Do not use laptop under load until fan is repaired."
             ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "Thermal Vent Airflow & Acoustic Test",
+        "instructions": [
+          "Locate the exhaust vents along the rear or side edges of the laptop chassis.",
+          "Hold your palm 1-2 inches from the vent while running a browser tab or loading video.",
+          "Listen carefully to the acoustic pitch of the cooling fan."
+        ],
+        "expected_observation": "A grinding, rattling, or buzzing sound indicates dried sleeve bearings; scorching chassis with zero airflow indicates a seized fan motor."
+      }
     },
     "q_fan_speed_idle": {
       "id": "q_fan_speed_idle",
@@ -991,6 +1172,14 @@
                 "confidence": 0.35,
                 "differentiator": "Voltage sag under transient gaming loads trips safety shutdown."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Remove heatsink, scrape off hardened thermal paste using 99% isopropyl alcohol.",
+              "Rx 2: Apply high-viscosity thermal paste (e.g., Honeywell PTM7950 or Arctic MX-6).",
+              "Rx 3: Blow compressed air through heatsink exhaust radiator fins to dislodge dust blankets.",
+              "Rx 4: Ensure all thermal pads on VRMs and VRAM make proper contact."
             ]
           }
         }
@@ -1041,6 +1230,13 @@
                 "confidence": 0.45,
                 "differentiator": "Reseating M.2 drive restores detection in BIOS."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Enter BIOS (press F2 / Del / F12 on boot) and verify if the SSD model name is listed in the storage menu.",
+              "Rx 2: If SSD is listed in BIOS: Boot from a USB installer and run `bootrec /fixboot` and `bcdboot` to rebuild EFI.",
+              "Rx 3: If SSD is NOT listed in BIOS: Reseat the M.2 SSD in its slot; if still missing, SSD controller has died."
             ]
           }
         },
@@ -1075,6 +1271,13 @@
                 "confidence": 0.45,
                 "differentiator": "Perform System Restore from WinRE environment."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Boot into Windows Recovery Environment (WinRE) -> Advanced Options -> Startup Repair.",
+              "Rx 2: Open Command Prompt in WinRE and run `chkdsk C: /f /r` and `sfc /scannow`.",
+              "Rx 3: If automatic repair fails repeatedly, perform a clean OS reinstallation."
             ]
           }
         }
@@ -1125,6 +1328,13 @@
                 "confidence": 0.45,
                 "differentiator": "Analyze dump file with WinDbg."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Check drive health using CrystalDiskInfo or smartctl.",
+              "Rx 2: Reseat NVMe SSD and check for thermal throttling on SSD controller.",
+              "Rx 3: Update SSD firmware from manufacturer utility (Samsung Magician, Crucial Executive, etc.)."
             ]
           }
         }
@@ -1164,10 +1374,24 @@
             "diy_friendly": true,
             "certainty_factor": 0.98,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: BACK UP CRITICAL DATA IMMEDIATELY before turning the laptop off.",
+              "Rx 2: Do not run intensive defragmentation or disk repair scans.",
+              "Rx 3: Replace the failing mechanical HDD with a modern 2.5\" SATA SSD or M.2 NVMe SSD."
+            ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "Storage Drive Acoustic Stethoscope Check",
+        "instructions": [
+          "Power on the laptop and place your ear against the bottom chassis near the palm-rest area."
+        ],
+        "expected_observation": "Rhythmic repetitive clicking (Click of Death) or scraping indicates mechanical hard drive read/write head failure."
+      }
     },
     "q_boot_speed": {
       "id": "q_boot_speed",
@@ -1219,6 +1443,13 @@
                 "confidence": 0.45,
                 "differentiator": "Pending sector count > 0 in SMART report."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Upgrade mechanical 5400RPM HDD to an SSD (SATA or M.2 NVMe).",
+              "Rx 2: Check SMART health with CrystalDiskInfo or smartctl for reallocated sectors.",
+              "Rx 3: Disable Windows Search Indexing and SysMain temporarily in services.msc."
             ]
           }
         }
@@ -1269,10 +1500,25 @@
                 "confidence": 0.3,
                 "differentiator": "RAM works in another PC, but fails in both slots here."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Power off, remove battery/charger, open bottom cover.",
+              "Rx 2: Remove RAM modules, clean golden contacts gently with an eraser and isopropyl alcohol.",
+              "Rx 3: Test modules one stick at a time in alternate slots to identify whether a module or a slot is dead."
             ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "POST Audible Tone & LED Blink Diagnostic",
+        "instructions": [
+          "Power on the laptop in a quiet room and listen for any sequence of audible beeps.",
+          "Watch the Caps Lock, Num Lock, or Battery LED for repeating amber and white blink sequences (e.g. 3 amber, 2 white)."
+        ],
+        "expected_observation": "Distinct beep or blink patterns indicate specific low-level hardware initialization failures (RAM, CPU, or BIOS)."
+      }
     },
     "q_ram_recognized": {
       "id": "q_ram_recognized",
@@ -1318,6 +1564,12 @@
                 "confidence": 0.4,
                 "differentiator": "Single stick works in slot 1 but not slot 2."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Reseat the unrecognized RAM module firmly into its slot until latches click.",
+              "Rx 2: Swap sticks between slots: if the problem follows the stick, replace the RAM stick; if it stays in the slot, slot is dead."
             ]
           }
         }
@@ -1367,6 +1619,13 @@
                 "confidence": 0.45,
                 "differentiator": "Disable C-States in BIOS to test stability."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Run Windows Memory Diagnostic (`mdsched.exe`) or MemTest86 overnight.",
+              "Rx 2: Disable Intel SpeedStep or AMD Cool'n'Quiet temporarily in BIOS to test power state stability.",
+              "Rx 3: Replace faulty RAM module if MemTest reports any memory errors."
             ]
           }
         }
@@ -1417,10 +1676,26 @@
                 "confidence": 0.3,
                 "differentiator": "Keyboard operates normally in BIOS setup."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Test in an online keyboard tester to see if dead keys share a specific electrical row.",
+              "Rx 2: Clean under keys with compressed air and contact cleaner.",
+              "Rx 3: Replace the internal keyboard or upper palm rest assembly."
             ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "Systematic Keyboard Matrix Test",
+        "instructions": [
+          "Open a text editor (Notepad, TextEdit) or an online keyboard tester.",
+          "Press every key systematically row by row from Esc to Enter.",
+          "Plug in an external USB keyboard and verify if keys type properly externally."
+        ],
+        "expected_observation": "Entire vertical columns or diagonal rows dead indicates a severed membrane trace; working externally confirms software and OS drivers are healthy."
+      }
     },
     "q_keyboard_backlight": {
       "id": "q_keyboard_backlight",
@@ -1493,6 +1768,13 @@
                 "confidence": 0.4,
                 "differentiator": "Cleaning dome perimeter restores mechanical travel."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Inspect bottom of laptop to confirm battery is not swollen.",
+              "Rx 2: Adjust the central clicker tension set-screw on the bottom of the trackpad bracket.",
+              "Rx 3: Clean around trackpad edges to dislodge dirt or sticky residue."
             ]
           }
         }
@@ -1568,6 +1850,13 @@
                 "confidence": 0.35,
                 "differentiator": "Camera connects/disconnects when tilting screen."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Check physical slider privacy shutter over the camera lens.",
+              "Rx 2: Press keyboard function key (e.g. F8 or F10) camera disable toggle.",
+              "Rx 3: Inspect Device Manager -> Cameras / Imaging devices for yellow warning flag."
             ]
           }
         }
@@ -1618,6 +1907,13 @@
                 "confidence": 0.45,
                 "differentiator": "Wi-Fi speeds drop only when external hard drive is plugged into adjacent port."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Open bottom cover and verify both black/white antenna snap-connectors are firmly seated onto the M.2 card.",
+              "Rx 2: Ensure Intel/Realtek WLAN drivers are updated.",
+              "Rx 3: Replace M.2 Wi-Fi card with a high-performance Intel AX210 card ($20)."
             ]
           }
         }
@@ -1745,7 +2041,14 @@
             "diy_friendly": true,
             "certainty_factor": 1.0,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Loosen the hinge tension nut slightly (1/8 turn) to reduce mechanical torque.",
+              "Rx 2: Re-anchor brass standoffs using high-strength structural epoxy (e.g. JB Weld PlasticWeld) or replace top cover.",
+              "Rx 3: Do not force lid open or closed until repaired."
+            ]
           }
         }
       ]
@@ -1784,10 +2087,26 @@
             "diy_friendly": true,
             "certainty_factor": 0.95,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Locate the CR2032 coin cell on the motherboard (often wrapped in yellow or black shrink tubing with a 2-pin molex header).",
+              "Rx 2: Replace with a fresh 3V CR2032 coin cell.",
+              "Rx 3: Re-enter BIOS and set correct date, time, and boot order."
+            ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "RTC Clock Persistence Test",
+        "instructions": [
+          "Set the correct date and time in your operating system.",
+          "Shut down the laptop, disconnect the AC charger, and leave it off for 15 minutes.",
+          "Power on and check whether the system clock reverted to a factory year (e.g., 2000 or 2015)."
+        ],
+        "expected_observation": "Date and time reverting to factory default confirms a depleted CMOS coin cell battery."
+      }
     },
     "q_liquid_spill": {
       "id": "q_liquid_spill",
@@ -1830,6 +2149,14 @@
                 "confidence": 0.4,
                 "differentiator": "Inspection confirms spill tray prevented liquid from reaching logic board."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Guarded - Professional Component-Level Board Repair Required",
+            "prescription": [
+              "Rx 1: DISCONNECT battery and charger immediately; DO NOT try to power on.",
+              "Rx 2: DO NOT place in rice (rice dust enters fans and traps moisture).",
+              "Rx 3: Disassemble completely, inspect Liquid Contact Indicators (LCIs).",
+              "Rx 4: Clean all green/white corrosion under a microscope using 99% isopropyl alcohol and ultrasonic cleaner."
             ]
           }
         }
@@ -1880,6 +2207,13 @@
                 "confidence": 0.5,
                 "differentiator": "Resetting security keys in BIOS restores TPM functionality."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Enter BIOS -> Security -> Enable Intel PTT / AMD fTPM and clear TPM keys.",
+              "Rx 2: Update laptop BIOS to the latest version to apply firmware TPM fixes.",
+              "Rx 3: Ensure UEFI boot mode is enabled rather than Legacy CSM."
             ]
           }
         }
@@ -1919,7 +2253,14 @@
             "diy_friendly": false,
             "certainty_factor": 1.0,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": false,
+            "prognosis": "Fair - Authorized Service Center Hardware Replacement",
+            "prescription": [
+              "Rx 1: If purchased used, request the master password from the seller or previous IT department.",
+              "Rx 2: Check for master backdoor hash codes at bios-pw.org.",
+              "Rx 3: May require flashing a clean, unprovisioned BIOS dump to the SPI ROM using a programmer."
+            ]
           }
         }
       ]
@@ -1958,7 +2299,14 @@
             "diy_friendly": true,
             "certainty_factor": 1.0,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Log into your Microsoft Account at https://account.microsoft.com/devices/recoverykey to retrieve the 48-digit key.",
+              "Rx 2: Suspend BitLocker in Windows before performing any future BIOS updates.",
+              "Rx 3: Re-bind PCR banks in elevated terminal: `manage-bde -protectors -delete C: -type TPM` then `manage-bde -protectors -add C: -tpm`."
+            ]
           }
         }
       ]
@@ -1997,7 +2345,14 @@
             "diy_friendly": true,
             "certainty_factor": 0.98,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Immediately clone or back up your entire drive to external storage.",
+              "Rx 2: Replace the SSD with a new NVMe PCIe Gen 4 SSD.",
+              "Rx 3: Do not trust the drive with critical unbacked-up data."
+            ]
           }
         }
       ]
@@ -2059,7 +2414,14 @@
             "diy_friendly": true,
             "certainty_factor": 0.92,
             "is_deterministic": true,
-            "competing_hypotheses": []
+            "competing_hypotheses": [],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: This is an acoustic nuisance but is 100% harmless to hardware life.",
+              "Rx 2: Disabling aggressive C-states (C1E) in BIOS can reduce pitch fluctuations.",
+              "Rx 3: Capping framerates in games eliminates extreme GPU coil whine spikes."
+            ]
           }
         }
       ]
@@ -2109,6 +2471,13 @@
                 "confidence": 0.45,
                 "differentiator": "Cleaning glass with microfiber removes phantom inputs."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Test unplugged on battery power to rule out noisy ground from a cheap third-party charger.",
+              "Rx 2: Recalibrate touch in Windows Tablet PC settings.",
+              "Rx 3: If hardware fault persists, disable 'HID-compliant touch screen' in Device Manager to preserve mouse usability."
             ]
           }
         }
@@ -2289,6 +2658,13 @@
                 "confidence": 0.4,
                 "differentiator": "OEM BIOS update addresses known display switching latency bug."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Update both the integrated graphics driver and dedicated Nvidia driver to matching WHQL releases.",
+              "Rx 2: In BIOS, toggle graphics mode from 'Dynamic / Advanced Optimus' to 'Discrete Only' as a temporary workaround.",
+              "Rx 3: Update laptop OEM BIOS firmware for display MUX timing fixes."
             ]
           }
         }
@@ -2365,10 +2741,25 @@
                 "confidence": 0.4,
                 "differentiator": "Magnet has shifted away from proper Hall effect alignment."
               }
+            ],
+            "is_common": false,
+            "prognosis": "Excellent - Safe Home DIY Remedy",
+            "prescription": [
+              "Rx 1: Remove magnetic Apple Watch / smartwatch bands or bracelets from your wrists while typing.",
+              "Rx 2: Inspect screen bezel top edge to verify the small magnet has not dislodged.",
+              "Rx 3: In Windows Power Options, set 'When I close the lid' to 'Do Nothing' to verify."
             ]
           }
         }
-      ]
+      ],
+      "clinical_test": {
+        "test_name": "Hall-Effect Magnetic Lid Sensor Test",
+        "instructions": [
+          "Take a small household refrigerator magnet.",
+          "Slowly sweep the magnet along the perimeter of the palm-rest near the speakers and trackpad edge while the screen is on."
+        ],
+        "expected_observation": "The screen immediately going to sleep when the magnet passes confirms the internal Hall-effect sensor is functional."
+      }
     },
     "q_chassis_screws": {
       "id": "q_chassis_screws",

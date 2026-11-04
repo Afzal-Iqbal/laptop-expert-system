@@ -151,4 +151,35 @@ def test_zero_cross_subsystem_linkage(kb_data):
                 assert src_cat == tgt_cat, f"Cross-subsystem leak: {nid} ({src_cat}) -> {nxt} ({tgt_cat})"
 
 
+def test_clinical_tests_schema(kb_data):
+    """Verify that nodes with clinical desk tests have valid structured instructions."""
+    nodes = kb_data["nodes"]
+    nodes_with_tests = [n for n in nodes.values() if "clinical_test" in n]
+    assert len(nodes_with_tests) >= 10, "Expected at least 10 physical clinical desk tests"
+
+    for node in nodes_with_tests:
+        test_info = node["clinical_test"]
+        assert "test_name" in test_info and isinstance(test_info["test_name"], str)
+        assert "instructions" in test_info and isinstance(test_info["instructions"], list)
+        assert len(test_info["instructions"]) >= 1
+        assert "expected_observation" in test_info and isinstance(test_info["expected_observation"], str)
+
+
+def test_leaf_doctor_protocols(kb_data):
+    """Verify that diagnostic leaves have is_common, prognosis, and prescription fields."""
+    nodes = kb_data["nodes"]
+    for node_id, node in nodes.items():
+        for opt in node["options"]:
+            leaf = opt.get("leaf_diagnosis")
+            if leaf:
+                assert "is_common" in leaf, f"Node {node_id}:{opt['key']} missing is_common"
+                assert isinstance(leaf["is_common"], bool)
+                assert "prognosis" in leaf, f"Node {node_id}:{opt['key']} missing prognosis"
+                assert isinstance(leaf["prognosis"], str)
+                assert len(leaf["prognosis"]) > 0
+                assert "prescription" in leaf, f"Node {node_id}:{opt['key']} missing prescription"
+                assert isinstance(leaf["prescription"], list)
+                assert len(leaf["prescription"]) > 0
+
+
 
