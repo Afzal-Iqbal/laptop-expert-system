@@ -19,6 +19,10 @@ class DiagnosticResult:
     is_inconclusive: bool = False
     competing_hypotheses: List[Dict[str, Any]] = field(default_factory=list)
     limitation_notes: Optional[str] = None
+    prognosis: str = "Good - Routine Hardware Service"
+    prescription: List[str] = field(default_factory=list)
+    clinical_tests_performed: List[Dict[str, str]] = field(default_factory=list)
+    is_common: bool = False
 
 
 @dataclass
@@ -82,6 +86,13 @@ class ExpertInferenceEngine:
     def get_node(self, node_id: str) -> Optional[Dict[str, Any]]:
         return self.nodes.get(node_id)
 
+    def get_clinical_test(self, node_id: str) -> Optional[Dict[str, Any]]:
+        """Returns the structured clinical desk test for a given node if one exists."""
+        node = self.get_node(node_id)
+        if not node:
+            return None
+        return node.get("clinical_test")
+
     def explain_question(self, node_id: str) -> str:
         node = self.get_node(node_id)
         if not node:
@@ -91,6 +102,52 @@ class ExpertInferenceEngine:
     def get_audit_questions(self) -> List[Dict[str, Any]]:
         """Returns all questions excluding the root emergency triage node, grouped by category."""
         return [node for nid, node in self.nodes.items() if nid != "q_emergency_triage"]
+
+    def generate_doctor_report(
+        self,
+        result: DiagnosticResult,
+        brand: str = "Generic OEM",
+        processor: str = "Standard Architecture"
+    ) -> Dict[str, Any]:
+        """
+        Synthesizes a structured clinical Doctor Consultation Report from a DiagnosticResult.
+        Frames the diagnostic conclusion, clinical desk tests, prognosis, and actionable prescriptions.
+        """
+        chief_complaint = (
+            result.history_trace[0]["chosen_label"]
+            if result.history_trace else "Unspecified hardware anomaly"
+        )
+        is_surety = result.confidence_score >= 0.95 and result.is_deterministic
+        surety_label = (
+            "100% Surety (Conclusive Clinical Proof)"
+            if is_surety else
+            f"{int(result.confidence_score * 100)}% Confidence (Differential Hypothesis)"
+        )
+
+        return {
+            "patient_profile": {
+                "brand": brand,
+                "processor": processor
+            },
+            "chief_complaint": chief_complaint,
+            "clinical_tests_conducted": result.clinical_tests_performed,
+            "diagnosis": result.title,
+            "issue_mechanism": result.issue,
+            "certainty_level": result.confidence_score,
+            "surety_label": surety_label,
+            "is_deterministic": result.is_deterministic,
+            "is_common": result.is_common,
+            "prognosis": result.prognosis,
+            "prescription": result.prescription or [f"Rx {i+1}: {step}" for i, step in enumerate(result.remediation)],
+            "urgency": result.urgency,
+            "diy_friendly": result.diy_friendly,
+            "estimated_cost": result.estimated_cost,
+            "competing_hypotheses": result.competing_hypotheses,
+            "is_inconclusive": result.is_inconclusive,
+            "limitation_notes": result.limitation_notes,
+            "history_trace": result.history_trace
+        }
+
 
     def process_emergency_step(self, history: List[tuple[str, str]]) -> Dict[str, Any]:
         """
@@ -129,6 +186,7 @@ class ExpertInferenceEngine:
                 "chosen_label": selected_option["label"],
                 "why": node["why"],
                 "is_healthy": selected_option.get("is_healthy", False),
+                "clinical_test": node.get("clinical_test")
             }
             trace.append(trace_step)
 
@@ -145,6 +203,18 @@ class ExpertInferenceEngine:
                     if is_inconclusive else None
                 )
 
+                tests_performed = [
+                    {
+                        "test_name": t["clinical_test"]["test_name"],
+                        "observation": t["chosen_label"],
+                        "subsystem": t.get("title", "")
+                    }
+                    for t in trace if t.get("clinical_test")
+                ]
+                prognosis = leaf.get("prognosis", "Good - Routine Hardware Service")
+                prescription = leaf.get("prescription") or [f"Rx {idx+1}: {step}" for idx, step in enumerate(leaf["remediation"])]
+                is_common = leaf.get("is_common", False)
+
                 result = DiagnosticResult(
                     title=leaf["title"],
                     issue=leaf["issue"],
@@ -157,7 +227,11 @@ class ExpertInferenceEngine:
                     is_deterministic=is_det,
                     is_inconclusive=is_inconclusive,
                     competing_hypotheses=competing,
-                    limitation_notes=limitation_notes
+                    limitation_notes=limitation_notes,
+                    prognosis=prognosis,
+                    prescription=prescription,
+                    clinical_tests_performed=tests_performed,
+                    is_common=is_common
                 )
                 return {
                     "status": "concluded",
@@ -173,6 +247,14 @@ class ExpertInferenceEngine:
                 # Terminal node reached without a specific fault leaf (subsystem branch completed normally)
                 node_cat = node.get("category", "")
                 cat_label = self.categories.get(node_cat, node_cat.replace("_", " ").title())
+                tests_performed = [
+                    {
+                        "test_name": t["clinical_test"]["test_name"],
+                        "observation": t["chosen_label"],
+                        "subsystem": t.get("title", "")
+                    }
+                    for t in trace if t.get("clinical_test")
+                ]
                 result = DiagnosticResult(
                     title=f"No Hardware Fault Detected in {cat_label}",
                     issue=f"All diagnostic checks for {cat_label} were evaluated within normal OEM operating parameters. If symptoms persist, the issue is likely software/driver related or located in an adjacent subsystem.",
@@ -190,7 +272,15 @@ class ExpertInferenceEngine:
                     is_deterministic=False,
                     is_inconclusive=False,
                     competing_hypotheses=[],
-                    limitation_notes=None
+                    limitation_notes=None,
+                    prognosis="Optimal - Hardware Healthy within Normal OEM Parameters",
+                    prescription=[
+                        f"Rx 1: Hardware verified operational in {cat_label}.",
+                        "Rx 2: If experiencing intermittent software freezes, run OS integrity check (`sfc /scannow`).",
+                        "Rx 3: Conduct the Comprehensive Annual Physical (50-Point Audit) to inspect all adjacent subsystems."
+                    ],
+                    clinical_tests_performed=tests_performed,
+                    is_common=True
                 )
                 return {
                     "status": "concluded",
@@ -365,6 +455,14 @@ class ExpertInferenceEngine:
                 f"Physical bench testing recommended."
                 if is_inconclusive else None
             )
+            tests_performed = [
+                {
+                    "test_name": t["clinical_test"]["test_name"],
+                    "observation": t["chosen_label"],
+                    "subsystem": t.get("subsystem", t.get("title", ""))
+                }
+                for t in state.get("trace", []) if t.get("clinical_test")
+            ]
             diag = DiagnosticResult(
                 title=critical.get("title", "Critical Hardware Defect"),
                 issue=critical.get("issue", "A critical hardware fault was detected requiring immediate shutdown or service."),
@@ -377,7 +475,11 @@ class ExpertInferenceEngine:
                 is_deterministic=is_det,
                 is_inconclusive=is_inconclusive,
                 competing_hypotheses=competing,
-                limitation_notes=limitation_notes
+                limitation_notes=limitation_notes,
+                prognosis=critical.get("prognosis", "Critical Safety Hazard - Immediate Component Service Required"),
+                prescription=critical.get("prescription", [f"Rx {i+1}: {s}" for i, s in enumerate(critical.get("remediation", []))]),
+                clinical_tests_performed=tests_performed,
+                is_common=critical.get("is_common", False)
             )
             return TreeAuditStepResult(
                 status="concluded_early",
@@ -418,7 +520,8 @@ class ExpertInferenceEngine:
                 "question": node["question"],
                 "chosen_label": matched_opt["label"],
                 "is_healthy": matched_opt.get("is_healthy", True),
-                "why": node.get("why", "")
+                "why": node.get("why", ""),
+                "clinical_test": node.get("clinical_test")
             }
             state["trace"].append(trace_entry)
 
