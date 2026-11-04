@@ -145,12 +145,27 @@ if app_mode == "⚡ Emergency Fast-Triage":
         res: DiagnosticResult = step_res["result"]
         st.success("🎯 Root Cause Analysis Completed!")
 
+        conf_percent = int(res.confidence_score * 100)
+        badge_html = (
+            f"<span style='background-color: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px solid #81c784;'>🟢 Deterministic Physical Finding ({conf_percent}%)</span>"
+            if res.is_deterministic else
+            f"<span style='background-color: #fff8e1; color: #f57f17; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px solid #ffe082;'>🟡 Conditional Diagnostic Hypothesis ({conf_percent}%)</span>"
+        )
+
         st.markdown(f"""
-        <div style="background-color: #f1f8e9; border: 2px solid #81c784; border-radius: 10px; padding: 20px; margin-bottom: 25px;">
-            <h2 style="color: #2e7d32; margin-top: 0;">{res.title}</h2>
-            <p style="font-size: 1.15rem; color: #333;">{res.issue}</p>
+        <div style="background-color: #f1f8e9; border: 2px solid #81c784; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 style="color: #2e7d32; margin: 0;">{res.title}</h2>
+                <div>{badge_html}</div>
+            </div>
+            <p style="font-size: 1.15rem; color: #333; margin-bottom: 0;">{res.issue}</p>
         </div>
         """, unsafe_allow_html=True)
+
+        st.progress(res.confidence_score, text=f"Inference Certainty Factor (CF): {conf_percent}%")
+
+        if res.is_inconclusive or res.limitation_notes:
+            st.warning(f"⚠️ **Domain Limitation Warning:** {res.limitation_notes}")
 
         col_urg, col_cost, col_diy = st.columns(3)
         with col_urg:
@@ -159,6 +174,15 @@ if app_mode == "⚡ Emergency Fast-Triage":
             st.metric("Estimated Repair Cost", res.estimated_cost)
         with col_diy:
             st.metric("Repair Feasibility", "User Serviceable" if res.diy_friendly else "Board Technician")
+
+        if res.competing_hypotheses:
+            with st.expander("🔍 Differential Diagnoses / Competing Hypotheses (Ranked by Inexact Certainty)", expanded=True):
+                st.caption("Under inexact reasoning, symptoms may support multiple competing fault hypotheses. The primary diagnosis is ranked first:")
+                for h_idx, hyp in enumerate(res.competing_hypotheses, 1):
+                    h_pct = int(hyp.get('confidence', 0) * 100)
+                    st.markdown(f"**{h_idx}. {hyp['title']}** — `{h_pct}% Certainty`")
+                    st.markdown(f"*Disambiguation Test:* {hyp.get('differentiator', 'N/A')}")
+                    st.divider()
 
         st.divider()
 
@@ -275,12 +299,27 @@ elif app_mode == "🔍 Cascading Decision-Tree Audit":
         res: DiagnosticResult = step_res.result
         st.success("🎯 Early Root Cause Analysis Generated")
 
+        conf_percent = int(res.confidence_score * 100)
+        badge_html = (
+            f"<span style='background-color: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px solid #81c784;'>🟢 Deterministic Physical Finding ({conf_percent}%)</span>"
+            if res.is_deterministic else
+            f"<span style='background-color: #fff8e1; color: #f57f17; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px solid #ffe082;'>🟡 Conditional Diagnostic Hypothesis ({conf_percent}%)</span>"
+        )
+
         st.markdown(f"""
-        <div style="background-color: #ffebee; border: 2px solid #ef5350; border-radius: 10px; padding: 20px; margin-bottom: 25px;">
-            <h2 style="color: #c62828; margin-top: 0;">🛑 Audit Terminated Early: {res.title}</h2>
-            <p style="font-size: 1.15rem; color: #333;">{res.issue}</p>
+        <div style="background-color: #ffebee; border: 2px solid #ef5350; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 style="color: #c62828; margin: 0;">🛑 Audit Terminated Early: {res.title}</h2>
+                <div>{badge_html}</div>
+            </div>
+            <p style="font-size: 1.15rem; color: #333; margin-bottom: 0;">{res.issue}</p>
         </div>
         """, unsafe_allow_html=True)
+
+        st.progress(res.confidence_score, text=f"Inference Certainty Factor (CF): {conf_percent}%")
+
+        if res.is_inconclusive or res.limitation_notes:
+            st.warning(f"⚠️ **Domain Limitation Warning:** {res.limitation_notes}")
 
         col_urg, col_cost, col_diy = st.columns(3)
         with col_urg:
@@ -289,6 +328,15 @@ elif app_mode == "🔍 Cascading Decision-Tree Audit":
             st.metric("Estimated Repair Cost", res.estimated_cost)
         with col_diy:
             st.metric("Repair Feasibility", "User Serviceable" if res.diy_friendly else "Board Technician Required")
+
+        if res.competing_hypotheses:
+            with st.expander("🔍 Differential Diagnoses / Competing Hypotheses (Ranked by Inexact Certainty)", expanded=True):
+                st.caption("Under inexact reasoning, symptoms may support multiple competing fault hypotheses. The primary diagnosis is ranked first:")
+                for h_idx, hyp in enumerate(res.competing_hypotheses, 1):
+                    h_pct = int(hyp.get('confidence', 0) * 100)
+                    st.markdown(f"**{h_idx}. {hyp['title']}** — `{h_pct}% Certainty`")
+                    st.markdown(f"*Disambiguation Test:* {hyp.get('differentiator', 'N/A')}")
+                    st.divider()
 
         st.divider()
         st.subheader("🛠️ Step-by-Step Remediation Plan")

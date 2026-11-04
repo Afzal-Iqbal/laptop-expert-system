@@ -108,14 +108,14 @@
 **Description:** Update `app.py` to visually represent certainty and limitation boundaries. Add a visual confidence progress meter (`st.progress` / badge), color-coded pill tags (`🟢 Deterministic Physical Finding` vs. `🟡 Conditional Diagnostic Hypothesis`), a collapsible expander for `Differential Diagnostic Hypotheses`, and an alert card for `⚠️ Diagnostic Limitation / Inconclusive Finding` when confidence is below threshold or out-of-scope.
 
 **Acceptance criteria:**
-- [ ] Result views in Streamlit prominently display confidence score and deterministic vs conditional badges.
-- [ ] Competing hypotheses render inside a clean, sorted UI expander.
-- [ ] Inconclusive / limitation states display actionable lab advice instead of ambiguous generic verdicts.
-- [ ] Web UI tests in `tests/test_app.py` pass cleanly.
+- [x] Result views in Streamlit prominently display confidence score and deterministic vs conditional badges.
+- [x] Competing hypotheses render inside a clean, sorted UI expander.
+- [x] Inconclusive / limitation states display actionable lab advice instead of ambiguous generic verdicts.
+- [x] Web UI tests in `tests/test_app.py` pass cleanly.
 
 **Verification:**
-- [ ] Tests pass: `.venv/bin/pytest tests/test_app.py`
-- [ ] Manual check: Streamlit compiles and renders without errors.
+- [x] Tests pass: `.venv/bin/pytest tests/test_app.py`
+- [x] Manual check: Streamlit compiles and renders without errors.
 
 **Dependencies:** Task 3
 
@@ -128,6 +128,6 @@
 ---
 
 ## Checkpoint: Final Acceptance (After Tasks 4-5)
-- [ ] All tests pass: `.venv/bin/pytest`
-- [ ] CLI runs smoothly in all modes (`python cli.py --audit-quick`, `python cli.py --emergency`).
-- [ ] Streamlit web UI renders confidence meters, differential diagnoses, and limitation notices.
+- [x] All tests pass: `.venv/bin/pytest`
+- [x] CLI runs smoothly in all modes (`python cli.py --audit-quick`, `python cli.py --emergency`).
+- [x] Streamlit web UI renders confidence meters, differential diagnoses, and limitation notices.
