@@ -83,3 +83,57 @@ def test_subsystem_pipeline_metadata(kb_data):
         gw_node_id = gateways[cat]
         assert gw_node_id in nodes, f"Gateway node {gw_node_id} not found in nodes"
 
+
+def test_leaf_certainty_factors_and_determinism(kb_data):
+    """Verify that all leaf diagnoses specify valid certainty factors and determinism flags."""
+    nodes = kb_data["nodes"]
+    leaf_count = 0
+    for node_id, node in nodes.items():
+        for opt in node["options"]:
+            leaf = opt.get("leaf_diagnosis")
+            if leaf:
+                leaf_count += 1
+                assert "certainty_factor" in leaf, f"Node {node_id}:{opt['key']} missing certainty_factor"
+                cf = leaf["certainty_factor"]
+                assert isinstance(cf, (int, float)), f"Certainty factor must be numeric in {node_id}:{opt['key']}"
+                assert 0.0 <= cf <= 1.0, f"Certainty factor {cf} out of range in {node_id}:{opt['key']}"
+                assert "is_deterministic" in leaf, f"Node {node_id}:{opt['key']} missing is_deterministic"
+                assert isinstance(leaf["is_deterministic"], bool)
+
+    assert leaf_count == 36, f"Expected 36 leaf diagnoses, found {leaf_count}"
+
+
+def test_boundary_rules_metadata(kb_data):
+    """Verify presence and validity of domain boundary rules in metadata."""
+    meta = kb_data["metadata"]
+    assert "boundary_rules" in meta
+    bounds = meta["boundary_rules"]
+    assert "domain" in bounds
+    assert "certainty_threshold" in bounds
+    assert 0.0 < bounds["certainty_threshold"] < 1.0
+    assert "out_of_scope_conditions" in bounds
+    assert isinstance(bounds["out_of_scope_conditions"], list)
+    assert len(bounds["out_of_scope_conditions"]) > 0
+    assert "limitation_statement" in bounds
+
+
+def test_competing_hypotheses_structure(kb_data):
+    """Verify that conditional leaves with competing hypotheses have well-formed alternatives."""
+    nodes = kb_data["nodes"]
+    hypotheses_count = 0
+    for node_id, node in nodes.items():
+        for opt in node["options"]:
+            leaf = opt.get("leaf_diagnosis")
+            if leaf and "competing_hypotheses" in leaf:
+                hyp_list = leaf["competing_hypotheses"]
+                assert isinstance(hyp_list, list)
+                for hyp in hyp_list:
+                    hypotheses_count += 1
+                    assert "title" in hyp
+                    assert "confidence" in hyp
+                    assert 0.0 <= hyp["confidence"] <= 1.0
+                    assert "differentiator" in hyp
+
+    assert hypotheses_count > 10, "Should have competing hypotheses defined across ambiguous leaves"
+
+

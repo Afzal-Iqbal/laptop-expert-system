@@ -28,13 +28,13 @@
 **Description:** Upgrade `knowledge_base.json` to equip diagnostic leaves with formal `certainty_factor` values ($0.0$ to $1.0$), `is_deterministic` indicators, and `competing_hypotheses` for ambiguous symptoms (e.g. black screen, sudden shutdown, thermal throttle). Add domain boundary metadata defining out-of-scope diagnostics. Update `tests/test_knowledge_base.py` to validate new schema properties.
 
 **Acceptance criteria:**
-- [ ] All leaf diagnoses in `knowledge_base.json` have valid `certainty_factor` floats ($0.0 \le CF \le 1.0$) and `is_deterministic` booleans.
-- [ ] Ambiguous multi-cause symptom nodes include structured `competing_hypotheses` arrays.
-- [ ] Schema validation tests in `tests/test_knowledge_base.py` verify presence and valid ranges for the new properties.
+- [x] All leaf diagnoses in `knowledge_base.json` have valid `certainty_factor` floats ($0.0 \le CF \le 1.0$) and `is_deterministic` booleans.
+- [x] Ambiguous multi-cause symptom nodes include structured `competing_hypotheses` arrays.
+- [x] Schema validation tests in `tests/test_knowledge_base.py` verify presence and valid ranges for the new properties.
 
 **Verification:**
-- [ ] Tests pass: `.venv/bin/pytest tests/test_knowledge_base.py`
-- [ ] All 52 nodes pass JSON validity and schema checks.
+- [x] Tests pass: `.venv/bin/pytest tests/test_knowledge_base.py`
+- [x] All 52 nodes pass JSON validity and schema checks.
 
 **Dependencies:** None
 

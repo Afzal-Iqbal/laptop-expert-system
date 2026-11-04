@@ -29,6 +29,17 @@
       "memory_performance": "q_post_beeps",
       "peripherals_input": "q_keyboard_keys",
       "connectivity_audio": "q_wifi_reception"
+    },
+    "boundary_rules": {
+      "domain": "Non-invasive electronic hardware triage and subsystem diagnostics for portable PCs",
+      "certainty_threshold": 0.6,
+      "out_of_scope_conditions": [
+        "liquid_corrosion_pcb",
+        "structural_chassis_fracture",
+        "proprietary_asic_firmware_corruption",
+        "external_peripheral_internals"
+      ],
+      "limitation_statement": "If symptoms exceed non-invasive testing or fall below the 60% confidence threshold, physical bench instruments (oscilloscope, bench power supply, schematic boardview) are required."
     }
   },
   "emergency_entry_node": "q_emergency_triage",
@@ -126,7 +137,26 @@
               "If behavior persists, board-level repair or motherboard replacement is required."
             ],
             "urgency": "Critical",
-            "diy_friendly": false
+            "diy_friendly": false,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "CPU/GPU Thermal Overheat Cutoff",
+                "confidence": 0.4,
+                "differentiator": "Check if heatsink is cold despite instant shutdown."
+              },
+              {
+                "title": "Corrupted BIOS SPI ROM Image",
+                "confidence": 0.35,
+                "differentiator": "Reflash BIOS using external programmer or crisis USB."
+              },
+              {
+                "title": "Shorted Auxiliary I/O Sub-Board (USB/Audio)",
+                "confidence": 0.3,
+                "differentiator": "Disconnect ribbon cables to side I/O daughterboards and re-test."
+              }
+            ]
           }
         }
       ]
@@ -156,7 +186,21 @@
               "Replace the modular DC-in harness cable if the laptop uses a cable-style jack."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.8,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Blown Input Protection MOSFET (Reverse Polarity Trip)",
+                "confidence": 0.5,
+                "differentiator": "Requires 19V rail multimeter probe at current sense resistor."
+              },
+              {
+                "title": "Dead AC Adapter Power Cord / Broken Wall Plug",
+                "confidence": 0.45,
+                "differentiator": "Verify AC wall cord connectivity with DMM."
+              }
+            ]
           }
         },
         {
@@ -184,7 +228,21 @@
               "Perform a CMOS/RTC battery clear."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.88,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Unseated / Incompatible RAM SODIMM",
+                "confidence": 0.6,
+                "differentiator": "Check manufacturer LED blink pattern chart for 2-3 code."
+              },
+              {
+                "title": "CPU VCore Power Rail Phase Failure",
+                "confidence": 0.45,
+                "differentiator": "Check for 3-5 or 4-2 blink sequences."
+              }
+            ]
           }
         }
       ]
@@ -220,7 +278,21 @@
               "Reflash the BIOS chip using a hardware programmer (CH341A) or send for board diagnosis."
             ],
             "urgency": "Critical",
-            "diy_friendly": false
+            "diy_friendly": false,
+            "certainty_factor": 0.78,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Depleted RTC / CMOS Coin Cell Lockout",
+                "confidence": 0.45,
+                "differentiator": "Measure CMOS cell voltage (< 2.8V indicates dead cell)."
+              },
+              {
+                "title": "Loose Power Button Flex Cable in ZIF Connector",
+                "confidence": 0.4,
+                "differentiator": "Reseat power button ribbon cable."
+              }
+            ]
           }
         },
         {
@@ -239,7 +311,10 @@
               "If keyboard-integrated, test by bridging the power pins on the motherboard power connector."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.95,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -275,7 +350,21 @@
               "Check if manufacturer battery conservation mode (e.g. Lenovo Vantage 60% cap) is active."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.82,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Third-Party Charger Handshake Resistance Mismatch",
+                "confidence": 0.55,
+                "differentiator": "Laptop recognizes power but refuses to charge without OEM ID pin handshake."
+              },
+              {
+                "title": "Battery Gas Gauge IC (SMBus) Lockout",
+                "confidence": 0.4,
+                "differentiator": "Run OEM battery calibration cycle in UEFI diagnostics."
+              }
+            ]
           }
         },
         {
@@ -294,7 +383,10 @@
               "Inspect battery connector pins for corrosion or bent terminals."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.95,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -364,7 +456,10 @@
               "DO NOT puncture, bend, or crush the battery."
             ],
             "urgency": "Critical",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 1.0,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -452,7 +547,16 @@
               "If fuse is intact, replace the LCD panel or the eDP cable."
             ],
             "urgency": "High",
-            "diy_friendly": false
+            "diy_friendly": false,
+            "certainty_factor": 0.95,
+            "is_deterministic": true,
+            "competing_hypotheses": [
+              {
+                "title": "Damaged eDP Backlight Enable Line (BL_ON / PWM)",
+                "confidence": 0.35,
+                "differentiator": "Multimeter check for 3.3V at pin 20-22 of LCD connector."
+              }
+            ]
           }
         },
         {
@@ -498,7 +602,21 @@
               "Replace the internal LCD screen panel (match model number on back of panel)."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Blown Motherboard Display Panel Fuse (F1)",
+                "confidence": 0.6,
+                "differentiator": "LCD itself may be functional; 19V backlight power fuse on mainboard blown."
+              },
+              {
+                "title": "Frayed eDP Display Ribbon Cable at Hinge Junction",
+                "confidence": 0.55,
+                "differentiator": "Check for continuity while flexing display hinge."
+              }
+            ]
           }
         },
         {
@@ -544,7 +662,10 @@
               "Verify hinge tension is not overly tight."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.92,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -580,7 +701,21 @@
               "If artifacts persist in BIOS, hardware BGA reballing or board replacement is required."
             ],
             "urgency": "High",
-            "diy_friendly": false
+            "diy_friendly": false,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "GPU Core / VRAM Thermal Throttling Artifacts",
+                "confidence": 0.5,
+                "differentiator": "Check if artifacts only occur after 10+ minutes of gaming."
+              },
+              {
+                "title": "Corrupted Display Driver / Windows DWM Crash",
+                "confidence": 0.4,
+                "differentiator": "Boot in Safe Mode; clean reinstall via DDU."
+              }
+            ]
           }
         }
       ]
@@ -646,10 +781,24 @@
             "remediation": [
               "Open bottom panel and inspect fan for hair, debris, or loose cables rubbing against blades.",
               "Clean with compressed air while holding the fan blades still (prevent back-EMF).",
-              "Replace the cooling fan assembly (readily available OEM part for $15\u2013$30)."
+              "Replace the cooling fan assembly (readily available OEM part for $15–$30)."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.88,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Antenna Cable / Internal Wire Rubbing Fan Blades",
+                "confidence": 0.5,
+                "differentiator": "Visual inspection reveals wire pressing against fan intake."
+              },
+              {
+                "title": "Foreign Debris / Hardened Dust Flake Obstruction",
+                "confidence": 0.4,
+                "differentiator": "Blow clean with compressed air and spin fan manually."
+              }
+            ]
           }
         },
         {
@@ -669,7 +818,21 @@
               "Do not use laptop under load until fan is repaired."
             ],
             "urgency": "Critical",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.8,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Zero-RPM Passive Fan Curve Active Under Light Load",
+                "confidence": 0.6,
+                "differentiator": "Fan remains stationary by OEM design until CPU hits 55°C."
+              },
+              {
+                "title": "Motherboard Fan Header PWM Driver Transistor Blown",
+                "confidence": 0.35,
+                "differentiator": "Fan motor functional when tested with 5V external power."
+              }
+            ]
           }
         }
       ]
@@ -731,7 +894,7 @@
       "category": "thermals_cooling",
       "title": "Thermal Emergency Power Cutoff",
       "question": "Does the laptop abruptly shut off with zero warning after 15-30 minutes of gaming, video editing, or heavy load?",
-      "why": "CPU/GPU thermal junction limit (PROCHOT at ~100\u00b0C) triggering emergency hardware shutdown to prevent silicon damage.",
+      "why": "CPU/GPU thermal junction limit (PROCHOT at ~100°C) triggering emergency hardware shutdown to prevent silicon damage.",
       "options": [
         {
           "key": "no_shutdowns",
@@ -745,12 +908,12 @@
           "label": "Yes, consistently powers off after gaming or heavy stress",
           "is_healthy": false,
           "penalty": 20,
-          "defect_description": "Severe thermal junction trip (CPU/GPU hitting 105\u00b0C)",
+          "defect_description": "Severe thermal junction trip (CPU/GPU hitting 105°C)",
           "severity": "high",
           "estimated_cost_usd": "$20 - $60",
           "leaf_diagnosis": {
             "title": "Severe Thermal Overheating (Dried Paste / Clogged Heatsink)",
-            "issue": "A 'dust felt' blanket has formed between the fan impeller and the copper heatsink radiator fins, or the factory thermal paste has dried into a chalky insulator, trapping 100\u00b0C+ heat on the die.",
+            "issue": "A 'dust felt' blanket has formed between the fan impeller and the copper heatsink radiator fins, or the factory thermal paste has dried into a chalky insulator, trapping 100°C+ heat on the die.",
             "remediation": [
               "Remove heatsink, scrape off hardened thermal paste using 99% isopropyl alcohol.",
               "Apply high-viscosity thermal paste (e.g., Honeywell PTM7950 or Arctic MX-6).",
@@ -758,7 +921,21 @@
               "Ensure all thermal pads on VRMs and VRAM make proper contact."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Degraded AC Adapter Unable to Deliver Peak Amperage",
+                "confidence": 0.45,
+                "differentiator": "Run CPU stress test on pure battery vs AC adapter."
+              },
+              {
+                "title": "Motherboard VRM Filter Capacitor Degradation",
+                "confidence": 0.35,
+                "differentiator": "Voltage sag under transient gaming loads trips safety shutdown."
+              }
+            ]
           }
         }
       ]
@@ -794,7 +971,21 @@
               "If SSD is NOT listed in BIOS: Reseat the M.2 SSD in its slot; if still missing, SSD controller has died."
             ],
             "urgency": "Critical",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.8,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "UEFI/Legacy CSM Boot Mode Inversion in BIOS",
+                "confidence": 0.55,
+                "differentiator": "Switching boot mode restores visibility of OS drive."
+              },
+              {
+                "title": "Loose M.2 NVMe Mounting Screw / Unseated Connector",
+                "confidence": 0.45,
+                "differentiator": "Reseating M.2 drive restores detection in BIOS."
+              }
+            ]
           }
         },
         {
@@ -814,7 +1005,21 @@
               "If automatic repair fails repeatedly, perform a clean OS reinstallation."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.78,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Failing Storage Drive Bad Blocks on Critical OS Sectors",
+                "confidence": 0.55,
+                "differentiator": "Check SMART health and pending reallocation count."
+              },
+              {
+                "title": "Corrupted Windows Registry Hive (SYSTEM/SOFTWARE)",
+                "confidence": 0.45,
+                "differentiator": "Perform System Restore from WinRE environment."
+              }
+            ]
           }
         }
       ]
@@ -850,7 +1055,21 @@
               "Update SSD firmware from manufacturer utility (Samsung Magician, Crucial Executive, etc.)."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.75,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Failing RAM Memory Bit-Flips",
+                "confidence": 0.6,
+                "differentiator": "BSOD stop codes vary between MEMORY_MANAGEMENT and IRQL_NOT_LESS_OR_EQUAL."
+              },
+              {
+                "title": "Conflicting Low-Level Kernel Driver (Antivirus/VPN)",
+                "confidence": 0.45,
+                "differentiator": "Analyze dump file with WinDbg."
+              }
+            ]
           }
         }
       ]
@@ -886,7 +1105,10 @@
               "Replace the failing mechanical HDD with a modern 2.5\" SATA SSD or M.2 NVMe SSD."
             ],
             "urgency": "Critical",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.98,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -955,7 +1177,21 @@
               "Test modules one stick at a time in alternate slots to identify whether a module or a slot is dead."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Dust / Corrosion on RAM Gold Contacts",
+                "confidence": 0.55,
+                "differentiator": "Cleaning contacts with 99% isopropyl alcohol restores POST."
+              },
+              {
+                "title": "Failed Integrated Memory Controller (IMC) Inside CPU",
+                "confidence": 0.3,
+                "differentiator": "RAM works in another PC, but fails in both slots here."
+              }
+            ]
           }
         }
       ]
@@ -990,7 +1226,21 @@
               "Swap sticks between slots: if the problem follows the stick, replace the RAM stick; if it stays in the slot, slot is dead."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Integrated Graphics Shared VRAM Memory Allocation",
+                "confidence": 0.6,
+                "differentiator": "BIOS hardware reservation allocates 2GB-4GB for iGPU frame buffer."
+              },
+              {
+                "title": "Dead Secondary SODIMM Slot on Motherboard",
+                "confidence": 0.4,
+                "differentiator": "Single stick works in slot 1 but not slot 2."
+              }
+            ]
           }
         }
       ]
@@ -1026,7 +1276,21 @@
               "Replace faulty RAM module if MemTest reports any memory errors."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.75,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Corrupted Chipset / Power Management Driver",
+                "confidence": 0.5,
+                "differentiator": "Freezing disappears in Windows Safe Mode."
+              },
+              {
+                "title": "Unstable CPU Undervolt / Degrading Power Delivery",
+                "confidence": 0.45,
+                "differentiator": "Disable C-States in BIOS to test stability."
+              }
+            ]
           }
         }
       ]
@@ -1062,7 +1326,21 @@
               "Replace the internal keyboard or upper palm rest assembly."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Loose Keyboard Ribbon Cable in Mainboard Connector",
+                "confidence": 0.5,
+                "differentiator": "Reseating keyboard cable latch restores non-working columns."
+              },
+              {
+                "title": "Software Filter Keys / Sticky Keys Enabled in OS",
+                "confidence": 0.3,
+                "differentiator": "Keyboard operates normally in BIOS setup."
+              }
+            ]
           }
         }
       ]
@@ -1124,7 +1402,21 @@
               "Clean around trackpad edges to dislodge dirt or sticky residue."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.8,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Early-Stage Battery Swelling Pushing Trackpad from Below",
+                "confidence": 0.65,
+                "differentiator": "Removing bottom cover and inspecting battery shows dome displacement."
+              },
+              {
+                "title": "Debris / Dried Liquid Trapped Under Clicker Dome Switch",
+                "confidence": 0.4,
+                "differentiator": "Cleaning dome perimeter restores mechanical travel."
+              }
+            ]
           }
         }
       ]
@@ -1212,7 +1504,21 @@
               "Replace M.2 Wi-Fi card with a high-performance Intel AX210 card ($20)."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.8,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Windows Power Saver Disabling Wi-Fi Radio During Idle",
+                "confidence": 0.55,
+                "differentiator": "Uncheck 'Allow computer to turn off device' in Device Manager."
+              },
+              {
+                "title": "2.4GHz USB 3.0 RF Interference from Dongles",
+                "confidence": 0.45,
+                "differentiator": "Wi-Fi speeds drop only when external hard drive is plugged into adjacent port."
+              }
+            ]
           }
         }
       ]
@@ -1336,7 +1642,10 @@
               "Do not force lid open or closed until repaired."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 1.0,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -1372,7 +1681,10 @@
               "Re-enter BIOS and set correct date, time, and boot order."
             ],
             "urgency": "Routine",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.95,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -1409,7 +1721,16 @@
               "Clean all green/white corrosion under a microscope using 99% isopropyl alcohol and ultrasonic cleaner."
             ],
             "urgency": "Critical",
-            "diy_friendly": false
+            "diy_friendly": false,
+            "certainty_factor": 0.95,
+            "is_deterministic": true,
+            "competing_hypotheses": [
+              {
+                "title": "Superficial Top-Cover Spill Confined to Keyboard Well",
+                "confidence": 0.4,
+                "differentiator": "Inspection confirms spill tray prevented liquid from reaching logic board."
+              }
+            ]
           }
         }
       ]
@@ -1445,7 +1766,21 @@
               "Ensure UEFI boot mode is enabled rather than Legacy CSM."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "BIOS Update Inadvertently Toggled Intel PTT / AMD fTPM Off",
+                "confidence": 0.65,
+                "differentiator": "Re-enabling firmware TPM in security setup clears Windows 11 error."
+              },
+              {
+                "title": "CMOS Battery Drain Cleared Platform Hierarchy Keys",
+                "confidence": 0.5,
+                "differentiator": "Resetting security keys in BIOS restores TPM functionality."
+              }
+            ]
           }
         }
       ]
@@ -1481,7 +1816,10 @@
               "May require flashing a clean, unprovisioned BIOS dump to the SPI ROM using a programmer."
             ],
             "urgency": "High",
-            "diy_friendly": false
+            "diy_friendly": false,
+            "certainty_factor": 1.0,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -1517,7 +1855,10 @@
               "Re-bind PCR banks in elevated terminal: `manage-bde -protectors -delete C: -type TPM` then `manage-bde -protectors -add C: -tpm`."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 1.0,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -1553,7 +1894,10 @@
               "Do not trust the drive with critical unbacked-up data."
             ],
             "urgency": "High",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.98,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -1612,7 +1956,10 @@
               "Capping framerates in games eliminates extreme GPU coil whine spikes."
             ],
             "urgency": "Routine",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.92,
+            "is_deterministic": true,
+            "competing_hypotheses": []
           }
         }
       ]
@@ -1648,7 +1995,21 @@
               "If hardware fault persists, disable 'HID-compliant touch screen' in Device Manager to preserve mouse usability."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.82,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Electrical Noise from Unshielded Third-Party Charger",
+                "confidence": 0.5,
+                "differentiator": "Ghost touches cease immediately when unplugged and running on battery."
+              },
+              {
+                "title": "Static Charge / Conductive Moisture Film on Glass",
+                "confidence": 0.45,
+                "differentiator": "Cleaning glass with microfiber removes phantom inputs."
+              }
+            ]
           }
         }
       ]
@@ -1814,7 +2175,21 @@
               "Update laptop OEM BIOS firmware for display MUX timing fixes."
             ],
             "urgency": "Medium",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.8,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Nvidia Graphics Driver Crash During Display Handshake",
+                "confidence": 0.55,
+                "differentiator": "Pressing Win+Ctrl+Shift+B restarts display driver and recovers image."
+              },
+              {
+                "title": "Outdated Embedded Controller (EC) MUX Timing Firmware",
+                "confidence": 0.4,
+                "differentiator": "OEM BIOS update addresses known display switching latency bug."
+              }
+            ]
           }
         }
       ]
@@ -1876,7 +2251,21 @@
               "In Windows Power Options, set 'When I close the lid' to 'Do Nothing' to verify."
             ],
             "urgency": "Routine",
-            "diy_friendly": true
+            "diy_friendly": true,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Smart Watch / Magnetic Jewelry Triggering Palmrest Sensor",
+                "confidence": 0.6,
+                "differentiator": "Screen only sleeps when user rests left wrist on bottom chassis edge."
+              },
+              {
+                "title": "Internal Bezel Magnet Dislodged from Mount",
+                "confidence": 0.4,
+                "differentiator": "Magnet has shifted away from proper Hall effect alignment."
+              }
+            ]
           }
         }
       ]
