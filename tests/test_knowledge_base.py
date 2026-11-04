@@ -100,7 +100,7 @@ def test_leaf_certainty_factors_and_determinism(kb_data):
                 assert "is_deterministic" in leaf, f"Node {node_id}:{opt['key']} missing is_deterministic"
                 assert isinstance(leaf["is_deterministic"], bool)
 
-    assert leaf_count == 36, f"Expected 36 leaf diagnoses, found {leaf_count}"
+    assert leaf_count == 41, f"Expected 41 leaf diagnoses, found {leaf_count}"
 
 
 def test_boundary_rules_metadata(kb_data):
@@ -135,5 +135,20 @@ def test_competing_hypotheses_structure(kb_data):
                     assert "differentiator" in hyp
 
     assert hypotheses_count > 10, "Should have competing hypotheses defined across ambiguous leaves"
+
+
+def test_zero_cross_subsystem_linkage(kb_data):
+    """Verify that no diagnostic question leaks into an unrelated foreign subsystem."""
+    nodes = kb_data["nodes"]
+    for nid, node in nodes.items():
+        if nid == "q_emergency_triage":
+            continue
+        src_cat = node.get("category")
+        for opt in node["options"]:
+            nxt = opt.get("next_question")
+            if nxt and nxt in nodes:
+                tgt_cat = nodes[nxt].get("category")
+                assert src_cat == tgt_cat, f"Cross-subsystem leak: {nid} ({src_cat}) -> {nxt} ({tgt_cat})"
+
 
 

@@ -475,8 +475,7 @@
           "key": "usbc_ok_or_na",
           "label": "Charges properly via USB-C (or uses traditional DC barrel jack)",
           "is_healthy": true,
-          "penalty": 0,
-          "next_question": "q_display_illumination"
+          "penalty": 0
         },
         {
           "key": "usbc_slow_or_refused",
@@ -486,7 +485,31 @@
           "defect_description": "USB-C PD CC-line failure or loose daughterboard port",
           "severity": "medium",
           "estimated_cost_usd": "$30 - $80",
-          "next_question": "q_display_illumination"
+          "leaf_diagnosis": {
+            "title": "USB-C Power Delivery Controller or Port CC-Line Fault",
+            "issue": "The USB-C Power Delivery communication controller (CC pin) failed to negotiate 20V/15V PDO charging contracts, or the Type-C receptacle pins are damaged.",
+            "remediation": [
+              "Inspect USB-C port internally with flashlight for lint or bent pins.",
+              "Test with a known-good 65W+ USB-PD 3.0 charger and E-Marked 5A cable.",
+              "Update BIOS/EC firmware to resolve known USB-PD handshake timeouts."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Dirty / Oxidized Type-C Port Contacts",
+                "confidence": 0.55,
+                "differentiator": "Clean with 99% IPA and soft interdental brush."
+              },
+              {
+                "title": "Defective Charger Cable E-Marker Chip",
+                "confidence": 0.4,
+                "differentiator": "Test with an alternate 100W USB-C cable."
+              }
+            ]
+          }
         }
       ]
     },
@@ -627,7 +650,31 @@
           "defect_description": "System fails POST / No video signal generated from GPU/RAM",
           "severity": "critical",
           "estimated_cost_usd": "$50 - $180",
-          "next_question": "q_post_beeps"
+          "leaf_diagnosis": {
+            "title": "Complete Video Signal Failure (Motherboard / GPU / RAM POST Halt)",
+            "issue": "Neither internal LCD nor external HDMI/Type-C monitor receives video synchronization signals. The system is halted before video initialization (No POST).",
+            "remediation": [
+              "Perform hard EC reset: unplug charger, hold power button for 60 seconds.",
+              "Reseat RAM modules or test with one stick in slot 1.",
+              "Check Caps Lock key: if LED does not toggle when pressed, CPU/BIOS has halted."
+            ],
+            "urgency": "Critical",
+            "diy_friendly": true,
+            "certainty_factor": 0.8,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Unseated / Oxidized RAM Contacts Halting POST",
+                "confidence": 0.65,
+                "differentiator": "Caps Lock key will not toggle LED."
+              },
+              {
+                "title": "Corrupted UEFI/BIOS Flash ROM",
+                "confidence": 0.45,
+                "differentiator": "Crisis BIOS recovery USB key flash required."
+              }
+            ]
+          }
         }
       ]
     },
@@ -731,15 +778,13 @@
           "key": "panel_pristine",
           "label": "Panel is pristine, no stuck pixels or severe bleed",
           "is_healthy": true,
-          "penalty": 0,
-          "next_question": "q_fan_noise"
+          "penalty": 0
         },
         {
           "key": "panel_defects_minor",
           "label": "1-3 dead pixels or minor backlight bleed (cosmetic)",
           "is_healthy": true,
-          "penalty": 5,
-          "next_question": "q_fan_noise"
+          "penalty": 5
         },
         {
           "key": "panel_cracked_or_lines",
@@ -749,7 +794,19 @@
           "defect_description": "Physically damaged LCD substrate / cracked panel",
           "severity": "high",
           "estimated_cost_usd": "$70 - $160",
-          "next_question": "q_fan_noise"
+          "leaf_diagnosis": {
+            "title": "Physical LCD Matrix Fracture or Row Driver Failure",
+            "issue": "Sub-surface glass crack or fractured indium tin oxide (ITO) column traces causing permanent colored lines or black ink spread across display.",
+            "remediation": [
+              "Connect to external monitor to verify GPU output is unaffected.",
+              "Replace internal LCD panel with compatible OEM replacement (check 30-pin vs 40-pin eDP connector)."
+            ],
+            "urgency": "High",
+            "diy_friendly": true,
+            "certainty_factor": 1.0,
+            "is_deterministic": true,
+            "competing_hypotheses": []
+          }
         }
       ]
     },
@@ -900,8 +957,7 @@
           "key": "no_shutdowns",
           "label": "Never shuts down abruptly during heavy tasks",
           "is_healthy": true,
-          "penalty": 0,
-          "next_question": "q_boot_outcome"
+          "penalty": 0
         },
         {
           "key": "shuts_down_under_load",
@@ -1124,15 +1180,13 @@
           "key": "fast_under_20s",
           "label": "Under 20 seconds (Fast NVMe SSD speed)",
           "is_healthy": true,
-          "penalty": 0,
-          "next_question": "q_post_beeps"
+          "penalty": 0
         },
         {
           "key": "moderate_20_60s",
           "label": "20 to 60 seconds (Acceptable SATA speed)",
           "is_healthy": true,
-          "penalty": 5,
-          "next_question": "q_post_beeps"
+          "penalty": 5
         },
         {
           "key": "very_slow_2m_plus",
@@ -1142,7 +1196,31 @@
           "defect_description": "Severe storage IOPS bottleneck (Slow 5400RPM HDD or degraded SSD)",
           "severity": "medium",
           "estimated_cost_usd": "$30 - $70",
-          "next_question": "q_post_beeps"
+          "leaf_diagnosis": {
+            "title": "Severe Storage Drive I/O Bottleneck or Failing NAND Controller",
+            "issue": "System experiences crippling I/O latency (>2000ms response time at 100% disk usage). Caused by mechanical HDD wear, saturated SSD DRAM cache, or failing flash NAND blocks.",
+            "remediation": [
+              "Upgrade mechanical 5400RPM HDD to an SSD (SATA or M.2 NVMe).",
+              "Check SMART health with CrystalDiskInfo or smartctl for reallocated sectors.",
+              "Disable Windows Search Indexing and SysMain temporarily in services.msc."
+            ],
+            "urgency": "Medium",
+            "diy_friendly": true,
+            "certainty_factor": 0.85,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Windows Update / Defender Background Service Saturated",
+                "confidence": 0.5,
+                "differentiator": "Disk usage subsides after 15 minutes of idle."
+              },
+              {
+                "title": "Mechanical Hard Disk S.M.A.R.T. Degradation",
+                "confidence": 0.45,
+                "differentiator": "Pending sector count > 0 in SMART report."
+              }
+            ]
+          }
         }
       ]
     },
@@ -1256,8 +1334,7 @@
           "key": "no_freezing",
           "label": "System runs smoothly without hard freezes",
           "is_healthy": true,
-          "penalty": 0,
-          "next_question": "q_keyboard_keys"
+          "penalty": 0
         },
         {
           "key": "frequent_freezing",
@@ -1458,8 +1535,7 @@
           "key": "camera_mic_working",
           "label": "Both webcam and microphone function clearly",
           "is_healthy": true,
-          "penalty": 0,
-          "next_question": "q_wifi_reception"
+          "penalty": 0
         },
         {
           "key": "camera_unrecognized",
@@ -1469,7 +1545,31 @@
           "defect_description": "Severed webcam ribbon harness in display bezel",
           "severity": "low",
           "estimated_cost_usd": "$25 - $55",
-          "next_question": "q_wifi_reception"
+          "leaf_diagnosis": {
+            "title": "Disconnected or Defective Internal Webcam / Mic Assembly",
+            "issue": "Internal USB 2.0 webcam bus line is broken, disconnected at the display bezel harness, or disabled by privacy shutter / keyboard toggle.",
+            "remediation": [
+              "Check physical slider privacy shutter over the camera lens.",
+              "Press keyboard function key (e.g. F8 or F10) camera disable toggle.",
+              "Inspect Device Manager -> Cameras / Imaging devices for yellow warning flag."
+            ],
+            "urgency": "Low",
+            "diy_friendly": true,
+            "certainty_factor": 0.9,
+            "is_deterministic": false,
+            "competing_hypotheses": [
+              {
+                "title": "Privacy Shutter Physically Closed",
+                "confidence": 0.6,
+                "differentiator": "Camera LED turns on, but image is black."
+              },
+              {
+                "title": "Damaged Display Bezel USB Data Harness",
+                "confidence": 0.35,
+                "differentiator": "Camera connects/disconnects when tilting screen."
+              }
+            ]
+          }
         }
       ]
     },
