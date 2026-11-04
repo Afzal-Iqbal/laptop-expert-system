@@ -1,99 +1,114 @@
-# Implementation Plan: LapDoc Expert System Rigor Upgrade
+# Implementation Plan: "Laptop Doctor" Clinical Diagnostic Experience
 
 ## Overview
-This plan implements the complete specification in [SPEC.md](file:///home/afzal/Projects/laptop-expert-system/SPEC.md). It delivers:
-1. A rigorous academic evaluation document (`docs/EXPERT_SYSTEM_EVALUATION.md`) establishing LapDoc's standing against classical AI Expert System literature (MYCIN, DENDRAL, CLIPS, Russell & Norvig).
-2. Knowledge base and inference engine upgrades incorporating **Certainty Factors** ($CF \in [0.0, 1.0]$) to differentiate deterministic ("hardcoded") rules from conditional ("may or may not") situations with ranked differential hypotheses.
-3. Explicit **Boundary & Limitation Awareness** to detect out-of-scope conditions and low-confidence thresholds.
-4. CLI and Streamlit UI integrations displaying confidence metrics and limitation alerts.
+Transform LapDoc into an empathetic, highly effective **"Laptop Doctor" clinical consultation system**. Following the confirmed statement of intent in `docs/intent/laptop_doctor_experience.md`, the system mimics a seasoned hardware physician:
+- Common, well-understood hardware ailments are diagnosed immediately with 100% surety and an actionable fix ("the medicine").
+- Complex or ambiguous ailments trigger the doctor to prescribe specific, non-invasive physical desk tests (e.g. flashlight test, external monitor check, power drain) and interpret test findings before drilling into targeted follow-ups.
+- Diagnostic outcomes are delivered as an authoritative **Clinical Consultation Report & Prescription** (Doctor's Diagnosis, Prognosis, Prescription & Treatment Plan, and Clinical Tests Performed).
 
 ---
 
 ## Architecture Decisions
 
-1. **Certainty Factor Representation & Mathematics**:
-   - Each leaf diagnosis in `knowledge_base.json` specifies an intrinsic `certainty_factor` ($0.0$ to $1.0$).
-   - A diagnosis with $CF = 1.0$ is classified as **Deterministic** (absolute physical evidence, e.g. broken pin, visible burn).
-   - A diagnosis with $CF < 1.0$ is classified as **Conditional** (probabilistic symptom correlation, e.g. black screen, sudden power cut).
-   - Independent positive evidence combines via MYCIN formula:
-     $$CF_{combined} = CF_1 + CF_2 \cdot (1 - CF_1)$$
-   - Ambiguous nodes provide a `competing_hypotheses` list containing ranked alternative candidates with their respective confidence ratings.
+1. **Clinical Test Protocol in Knowledge Base (`knowledge_base.json`)**:
+   - Equip diagnostic nodes with a structured `clinical_test` dictionary where applicable (`test_name`, `instructions`, `expected_observations`).
+   - Tag nodes with `is_common` flags for immediate primary resolution, and provide structured `prescription` steps.
 
-2. **Limitation & Boundary Detection**:
-   - A configurable certainty threshold (default $0.60$ / $60\%$). If a diagnostic conclusion has $CF < 0.60$, `DiagnosticResult.is_inconclusive` is set to `True`.
-   - Dedicated boundary nodes and rules for out-of-scope issues (e.g. liquid spill needing microscopic board repair, physical chassis damage) return structured limitation notices recommending bench hardware diagnostics.
-   - Preserves 100% backward compatibility for all existing callers of `DiagnosticResult`.
+2. **Doctor Consultation Engine Extensions (`engine.py`)**:
+   - Add clinical properties to `DiagnosticResult`: `prognosis: str`, `prescription: List[str]`, `clinical_tests_performed: List[Dict[str, str]]`.
+   - Add engine methods to retrieve active diagnostic tests and generate a structured `DoctorConsultationReport`.
+   - Maintain 100% backward compatibility with all existing engine APIs and data structures.
 
-3. **Symbolic AI Purity**:
-   - Zero black-box ML or LLM dependencies. All reasoning remains 100% transparent, explainable, and verifiable.
+3. **Streamlit "Doctor Consultation Room" UI (`app.py`)**:
+   - Rebrand the UI to the "Laptop Doctor" clinical workflow.
+   - For ambiguous nodes: render a prominent **"🩺 Prescribed Diagnostic Test"** card containing step-by-step instructions on what test to run at the desk before selecting the observed symptom.
+   - For diagnoses: present a doctor's **Prescription Pad & Treatment Plan** with clear DIY vs. Specialist guidance.
+   - Frame the full 50-point audit as a **"Comprehensive Annual Physical / Subsystem Health Checkup"**.
+
+4. **Terminal CLI Runner (`cli.py`)**:
+   - Align terminal outputs with clinical doctor consultation styling (Prescribed Tests, Doctor Diagnosis, Prescription).
 
 ---
 
 ## Dependency Graph
+
 ```text
-docs/EXPERT_SYSTEM_EVALUATION.md (Independent documentation)
-          │
-knowledge_base.json (Add CFs, competing hypotheses, boundary rules)
-          │
-       engine.py (Certainty calculation, limitation checking, trace enrichment)
-          │
-    ┌─────┴────────────────┐
-    ▼                      ▼
-  cli.py                 app.py (Streamlit)
+knowledge_base.json (Add clinical_test, is_common, and prescription tags)
+       │
+       ├── tests/test_knowledge_base.py (Validate schema additions)
+       │
+    engine.py (Add clinical test detection, DoctorConsultationReport, prognosis)
+       │
+       ├── tests/test_doctor_consultation.py (New test suite for doctor workflow)
+       │
+   ┌───┴────────────────┐
+   ▼                    ▼
+ app.py (Streamlit)   cli.py (Terminal)
+   │                    │
+   └── tests/test_app.py└── tests/test_cli.py
 ```
 
 ---
 
 ## Task List
 
-### Phase 1: Academic Defense & Core Engine Upgrade
+### Phase 1: Knowledge Base & Engine Doctor Protocols
 
-- [ ] **Task 1: Academic Evaluation & Viva Defense Document**
-  - Write `docs/EXPERT_SYSTEM_EVALUATION.md` covering the formal AI expert system taxonomy, comparison to MYCIN/CLIPS, knowledge base vs inference engine separation, working memory, explanation facilities, boundary awareness, and model viva Q&As.
-
-- [ ] **Task 2: Knowledge Base Enrichment with Certainty Factors & Boundary Rules**
-  - Update `knowledge_base.json` to equip leaf diagnoses with `certainty_factor`, `is_deterministic`, `competing_hypotheses`, and `boundary_conditions`.
+- [ ] **Task 1: Enrich Knowledge Base with Clinical Tests & Prescriptions**
+  - Update `knowledge_base.json` to enrich nodes with `clinical_test` definitions (flashlight screen test, external monitor test, battery rail test, RAM slot swap, etc.) and `is_common` flags.
   - Update schema tests in `tests/test_knowledge_base.py`.
 
-- [ ] **Task 3: Inference Engine Uncertainty & Limitation Logic**
-  - Update `DiagnosticResult` in `engine.py` with `confidence_score`, `is_deterministic`, `is_inconclusive`, `competing_hypotheses`, and `limitation_notes`.
-  - Implement MYCIN certainty combination and boundary threshold evaluations.
-  - Create new unit tests in `tests/test_uncertainty.py` and `tests/test_boundary.py`.
-  - Maintain backward compatibility so existing tests in `tests/test_engine.py` and `tests/test_tree_audit.py` pass without regression.
+- [ ] **Task 2: Inference Engine Clinical Consultation Protocols & Doctor Report**
+  - Enhance `DiagnosticResult` in `engine.py` with `prognosis`, `prescription`, and `clinical_tests_performed`.
+  - Add helper methods to format and extract prescribed tests and generate structured doctor reports.
+  - Create `tests/test_doctor_consultation.py` to test doctor consultation flow, common issue 100% surety, and ambiguous test prescribing.
 
-### Checkpoint 1: Foundation Verification
-- [ ] All 17 existing tests + new unit tests pass cleanly via `.venv/bin/pytest`.
-- [ ] Diagnostic traces correctly propagate Certainty Factors and identify limitations.
+### Checkpoint: Foundation
+- [ ] All tests pass: `.venv/bin/pytest tests/test_knowledge_base.py tests/test_doctor_consultation.py tests/test_engine.py`
+- [ ] Prescribed desk tests and common ailments correctly populate in engine results.
 
 ---
 
-### Phase 2: Interface Enhancements & Final Validation
+### Phase 2: User Interfaces (Web Consultation Room & Terminal Runner)
 
-- [ ] **Task 4: CLI Terminal Integration for Confidence, Hypotheses, & Limitations**
-  - Update `cli.py` to format and print certainty percentages, deterministic/conditional tags, competing hypotheses, and limitation alerts.
-  - Verify and update `tests/test_cli.py`.
+- [ ] **Task 3: Streamlit "Laptop Doctor" Consultation Room & Diagnostic Test Prompts**
+  - Update `app.py` to present the consultation room experience.
+  - Render active "🩺 Prescribed Diagnostic Test" instruction boxes when physical checks are needed.
+  - Render the final diagnosis as a Doctor's Prescription & Treatment Plan with clear medicine/remediation steps.
+  - Reframe the 50-point audit as a "Preventive Annual Physical / Health Checkup".
+  - Update `tests/test_app.py`.
 
-- [ ] **Task 5: Streamlit Web UI Integration for Confidence Meters & Differential Diagnoses**
-  - Update `app.py` to render visual certainty progress bars, badge indicators (`Deterministic` vs `Conditional`), expandable differential diagnoses, and boundary warning cards.
-  - Verify and update `tests/test_app.py`.
+- [ ] **Task 4: CLI Terminal "Laptop Physician" Consultation Flow**
+  - Update `cli.py` to format consultation prompts, prescribed tests, doctor diagnoses, and prescriptions in the terminal.
+  - Update `tests/test_cli.py`.
 
-### Checkpoint 2: Final Acceptance
-- [ ] 100% test pass across all test modules in `.venv/bin/pytest`.
-- [ ] CLI runner operates cleanly across `--emergency`, `--audit`, and `--audit-quick`.
-- [ ] Streamlit web app runs without exceptions.
+### Checkpoint: Interfaces
+- [ ] All tests pass: `.venv/bin/pytest tests/test_app.py tests/test_cli.py`
+- [ ] Manual check: Streamlit and CLI display doctor consultation, test instructions, and prescriptions cleanly.
+
+---
+
+### Phase 3: Documentation & System Polish
+
+- [ ] **Task 5: End-to-End System Validation, Regression Suite & Documentation**
+  - Update `README.md` to reflect the Laptop Doctor consultation paradigm.
+  - Run full test suite across all 34+ tests ensuring 100% pass rate.
+
+### Checkpoint: Complete
+- [ ] Full test suite green (`.venv/bin/pytest`).
+- [ ] Both web and CLI interfaces deliver consistent, rapid, and accurate doctor-like advice to non-expert users.
 
 ---
 
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
-| :--- | :---: | :--- |
-| **Breaking existing test assertions on `DiagnosticResult`** | High | Default all new fields in `DiagnosticResult` (`confidence_score=1.0`, `is_deterministic=True`, `is_inconclusive=False`, etc.) to maintain total backward compatibility. |
-| **Over-complicating knowledge base JSON schema** | Medium | Keep new fields optional with sensible engine fallbacks (if a node lacks `certainty_factor`, default to `1.0`). |
-| **UI clutter in Streamlit** | Low | Use Streamlit expanders (`st.expander`) for competing hypotheses and concise alert banners for limitations. |
+|---|---|---|
+| Ambiguous tests confuse non-expert users | Medium | Keep test instructions extremely simple, 2-3 steps max, using household tools (e.g., phone flashlight, HDMI cord). |
+| Existing automated tests break due to schema changes | High | Keep all additions optional and backward-compatible with default fallbacks in `engine.py`. |
+| Diagnostic tests require invasive teardown | High | Strictly constrain all prescribed tests to non-invasive external checks (no screwdriver/soldering required). |
 
 ---
 
-## Open Questions Resolved
-- **Certainty Threshold**: Set default to $0.60$ (60%) with explicit note that below 60% requires bench testing.
-- **Competing Hypotheses**: Display top 2–3 ranked alternative hypotheses in conditional cases.
+## Open Questions
+- None. Requirements and bounds confirmed during the `interview-me` session.
