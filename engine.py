@@ -170,14 +170,17 @@ class ExpertInferenceEngine:
             if next_q:
                 current_node_id = next_q
             else:
-                # Terminal node reached without a specific fault leaf (system is healthy or inconclusive)
+                # Terminal node reached without a specific fault leaf (subsystem branch completed normally)
+                node_cat = node.get("category", "")
+                cat_label = self.categories.get(node_cat, node_cat.replace("_", " ").title())
                 result = DiagnosticResult(
-                    title="No Hardware Fault Detected on Active Branch",
-                    issue="The symptoms evaluated along this diagnostic path fall within normal OEM operating parameters.",
+                    title=f"No Hardware Fault Detected in {cat_label}",
+                    issue=f"All diagnostic checks for {cat_label} were evaluated within normal OEM operating parameters. If symptoms persist, the issue is likely software/driver related or located in an adjacent subsystem.",
                     remediation=[
-                        "Ensure your operating system and vendor drivers are updated.",
-                        "If experiencing software glitches, run OS system file checker (`sfc /scannow`).",
-                        "Run the full 50-Point Audit to systematically check all other laptop subsystems."
+                        f"Hardware in {cat_label} appears operational.",
+                        "Reboot into Windows Safe Mode or clean boot to isolate background third-party software/drivers.",
+                        "If experiencing crashes or anomalies, run OS file verification (`sfc /scannow`).",
+                        "Run the full 50-Point Audit to systematically inspect all other laptop subsystems."
                     ],
                     urgency="Routine",
                     diy_friendly=True,
