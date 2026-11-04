@@ -37,3 +37,19 @@ def test_cli_emergency_deterministic_diagnosis():
     assert "DIAGNOSIS CONCLUDED: Dead Internal Battery Pack" in result.stdout
     assert "Certainty Factor:    95% [DETERMINISTIC (Physical Proof)]" in result.stdout
 
+
+def test_cli_displays_prescribed_desk_test():
+    """Verify that CLI formats and presents prescribed clinical desk tests with instructions."""
+    project_dir = os.path.dirname(os.path.dirname(__file__))
+    cmd = [os.path.join(project_dir, ".venv", "bin", "python"), "cli.py", "--emergency"]
+    # Inputs: (2) display -> (2) screen_completely_dark -> (2) faint_image_seen
+    input_str = "2\n2\n2\n"
+    result = subprocess.run(cmd, cwd=project_dir, input=input_str, capture_output=True, text=True)
+    assert result.returncode == 0
+    assert "[DOCTOR'S PRESCRIBED TEST] Smartphone Flashlight Screen Test" in result.stdout
+    assert "Instructions (Perform this safe desk test now):" in result.stdout
+    assert "Doctor's Prescription & Actionable Treatment Plan:" in result.stdout
+    assert "DIAGNOSIS CONCLUDED: Blown Screen Backlight Fuse" in result.stdout
+
+
+

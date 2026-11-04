@@ -12,15 +12,16 @@ def print_banner():
   | |__| (_| | |_) || |_| | (_) | (__ 
   |_____\__,_| .__/ |____/ \___/ \___|
              |_|                      
-   Laptop Hardware & Firmware Diagnostic Expert System
+   LapDoc: The Laptop Physician & Diagnostic Doctor
+   Clinical Hardware Triage, Desk Tests & Subsystem Physicals
 ========================================================================
 """
     print(banner)
 
 
 def run_emergency_cli(engine: ExpertInferenceEngine):
-    print("\n--- [⚡ Emergency Fast-Triage Mode] ---")
-    print("Answer questions step-by-step. The system will exit as soon as a root cause is found.\n")
+    print("\n--- [🩺 Urgent Laptop Consultation: Emergency Fast-Triage] ---")
+    print("Answer doctor consultation questions. The system prescribes safe desk tests for ambiguous cases.\n")
 
     history = []
     step_num = 1
@@ -37,9 +38,12 @@ def run_emergency_cli(engine: ExpertInferenceEngine):
             conf_percent = int(res.confidence_score * 100)
             det_label = "DETERMINISTIC (Physical Proof)" if res.is_deterministic else "CONDITIONAL (Heuristic Hypothesis)"
             print(f"Certainty Factor:    {conf_percent}% [{det_label}]")
+            if res.is_common and res.confidence_score >= 0.95:
+                print("Ailment Category:    Common Hardware Ailment (100% Surety)")
+            print(f"Clinical Prognosis:  {res.prognosis}")
             print(f"Urgency:             [{res.urgency.upper()}]")
             print(f"Estimated Cost:      {res.estimated_cost}")
-            print(f"DIY Friendly:        {'Yes (User Serviceable)' if res.diy_friendly else 'No (Professional Board Tech Required)'}")
+            print(f"DIY Friendly:        {'Yes (Safe Home DIY Remedy)' if res.diy_friendly else 'No (Professional Board Tech Required)'}")
 
             if res.is_inconclusive or res.limitation_notes:
                 print("\n" + "!" * 65)
@@ -47,7 +51,12 @@ def run_emergency_cli(engine: ExpertInferenceEngine):
                 print(f"   {res.limitation_notes}")
                 print("!" * 65)
 
-            print(f"\nRoot Cause:\n{res.issue}")
+            print(f"\nRoot Cause / Pathology:\n{res.issue}")
+
+            if res.clinical_tests_performed:
+                print("\n--- [🔬 Prescribed Clinical Desk Tests Completed] ---")
+                for t in res.clinical_tests_performed:
+                    print(f"  • {t['test_name']}: {t['observation']}")
 
             if res.competing_hypotheses:
                 print("\n--- [Differential Diagnoses / Competing Hypotheses] ---")
@@ -56,6 +65,12 @@ def run_emergency_cli(engine: ExpertInferenceEngine):
                     print(f"  {h_idx}. {hyp['title']} ({hyp_conf}% certainty)")
                     print(f"     Differentiator: {hyp.get('differentiator', 'N/A')}")
 
+            print("\n💊 Doctor's Prescription & Actionable Treatment Plan:")
+            prescription_items = res.prescription if res.prescription else [f"Rx {idx+1}: {step}" for idx, step in enumerate(res.remediation)]
+            for item in prescription_items:
+                print(f"  • {item}")
+
+            # Keep exact header for test backward compatibility
             print("\nStep-by-Step Remediation Plan:")
             for idx, step in enumerate(res.remediation, 1):
                 print(f"  {idx}. {step}")
@@ -77,6 +92,18 @@ def run_emergency_cli(engine: ExpertInferenceEngine):
             break
 
         node = step_res["current_node"]
+
+        # If this node prescribes a physical test, display the test protocol
+        clinical_test = node.get("clinical_test")
+        if clinical_test:
+            print("\n" + "=" * 65)
+            print(f"🩺 [DOCTOR'S PRESCRIBED TEST] {clinical_test['test_name']}")
+            print("   Instructions (Perform this safe desk test now):")
+            for step_idx, step_desc in enumerate(clinical_test['instructions'], 1):
+                print(f"     {step_idx}. {step_desc}")
+            print(f"   What to observe: {clinical_test['expected_observation']}")
+            print("=" * 65)
+
         print(f"\n[Step {step_num}] {node['title']}")
         print(f"Question: {node['question']}")
         print(f"💡 Why this is asked: {node['why']}")
@@ -140,6 +167,7 @@ def run_tree_audit_cli(engine: ExpertInferenceEngine, quick_healthy: bool = Fals
             conf_percent = int(res.confidence_score * 100)
             det_label = "DETERMINISTIC (Physical Proof)" if res.is_deterministic else "CONDITIONAL (Heuristic Hypothesis)"
             print(f"Certainty Factor:    {conf_percent}% [{det_label}]")
+            print(f"Clinical Prognosis:  {res.prognosis}")
             print(f"Urgency:        [{res.urgency.upper()}]")
             print(f"Est. Cost:      {res.estimated_cost}")
 
@@ -157,6 +185,11 @@ def run_tree_audit_cli(engine: ExpertInferenceEngine, quick_healthy: bool = Fals
                     hyp_conf = int(hyp.get("confidence", 0) * 100)
                     print(f"  {h_idx}. {hyp['title']} ({hyp_conf}% certainty)")
                     print(f"     Differentiator: {hyp.get('differentiator', 'N/A')}")
+
+            print("\n💊 Doctor's Prescription & Actionable Treatment Plan:")
+            prescription_items = res.prescription if res.prescription else [f"Rx {idx+1}: {step}" for idx, step in enumerate(res.remediation)]
+            for item in prescription_items:
+                print(f"  • {item}")
 
             print("\nStep-by-Step Remediation Plan:")
             for idx, step in enumerate(res.remediation, 1):
@@ -194,6 +227,12 @@ def run_tree_audit_cli(engine: ExpertInferenceEngine, quick_healthy: bool = Fals
         sub_name = step_res.subsystem_name
         depth = step_res.depth_level
         depth_tag = "Level 1: Gateway Triage" if depth == 1 else f"Level {depth}: Component Deep-Dive"
+
+        # If clinical test exists in tree audit node
+        clinical_test = node.get("clinical_test")
+        if clinical_test:
+            print(f"\n  🩺 [Prescribed Desk Test] {clinical_test['test_name']}")
+            print(f"     Observation sought: {clinical_test['expected_observation']}")
 
         print(f"\n[Subsystem {step_res.subsystem_index + 1}/7: {sub_name}] ({depth_tag})")
         print(f"Question: {node['question']}")
@@ -243,8 +282,8 @@ def main():
 
     while True:
         print("Select Mode:")
-        print("  1. ⚡ Emergency Fast-Triage (Early leaf exit in 4-8 steps)")
-        print("  2. 🔍 50-Point Subsystem Pre-Purchase Audit (Exhaustive Checklist)")
+        print("  1. 🩺 Urgent Symptom Consultation (Emergency Fast-Triage)")
+        print("  2. 📋 Comprehensive 50-Point Annual Physical (Exhaustive Checklist)")
         print("  3. ⚡ Quick Smoke Audit (Auto-fills healthy checks)")
         print("  4. 🚪 Exit")
         choice = input("\nEnter choice [1-4]: ").strip()
