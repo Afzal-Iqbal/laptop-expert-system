@@ -51,14 +51,14 @@
 **Description:** Upgrade `engine.py` to support inexact reasoning and boundary awareness. Update `DiagnosticResult` with `confidence_score: float`, `is_deterministic: bool`, `is_inconclusive: bool`, `competing_hypotheses: List[Dict]`, and `limitation_notes: Optional[str]`. Implement MYCIN-style certainty combination functions, inconclusive threshold checks ($CF < 0.60$), and out-of-scope boundary detection. Create dedicated test suites in `tests/test_uncertainty.py` and `tests/test_boundary.py`. Ensure 100% backward compatibility with all existing engine and audit tests.
 
 **Acceptance criteria:**
-- [ ] `DiagnosticResult` includes new confidence and limitation fields with safe defaults preserving backward compatibility.
-- [ ] Inexact reasoning correctly computes cumulative CF for multi-step paths.
-- [ ] Diagnoses with $CF < 0.60$ or out-of-domain symptoms flag `is_inconclusive=True` with explicit limitation notes.
-- [ ] 100% pass on all existing 17 tests + new tests in `test_uncertainty.py` and `test_boundary.py`.
+- [x] `DiagnosticResult` includes new confidence and limitation fields with safe defaults preserving backward compatibility.
+- [x] Inexact reasoning correctly computes cumulative CF for multi-step paths.
+- [x] Diagnoses with $CF < 0.60$ or out-of-domain symptoms flag `is_inconclusive=True` with explicit limitation notes.
+- [x] 100% pass on all existing 17 tests + new tests in `test_uncertainty.py` and `test_boundary.py`.
 
 **Verification:**
-- [ ] Tests pass: `.venv/bin/pytest tests/test_uncertainty.py tests/test_boundary.py tests/test_engine.py tests/test_tree_audit.py`
-- [ ] Existing callers receive expected `DiagnosticResult` objects without breaking.
+- [x] Tests pass: `.venv/bin/pytest tests/test_uncertainty.py tests/test_boundary.py tests/test_engine.py tests/test_tree_audit.py`
+- [x] Existing callers receive expected `DiagnosticResult` objects without breaking.
 
 **Dependencies:** Task 2
 
@@ -73,9 +73,9 @@
 ---
 
 ## Checkpoint: Foundation (After Tasks 1-3)
-- [ ] All unit and regression tests pass cleanly: `.venv/bin/pytest`
-- [ ] Engine successfully derives both deterministic and conditional diagnoses with certainty scores.
-- [ ] Domain limitations and inconclusive states are correctly detected and flagged.
+- [x] All unit and regression tests pass cleanly: `.venv/bin/pytest`
+- [x] Engine successfully derives both deterministic and conditional diagnoses with certainty scores.
+- [x] Domain limitations and inconclusive states are correctly detected and flagged.
 
 ---
 

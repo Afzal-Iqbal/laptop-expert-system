@@ -14,6 +14,11 @@ class DiagnosticResult:
     diy_friendly: bool
     estimated_cost: str
     history_trace: List[Dict[str, Any]] = field(default_factory=list)
+    confidence_score: float = 1.0
+    is_deterministic: bool = True
+    is_inconclusive: bool = False
+    competing_hypotheses: List[Dict[str, Any]] = field(default_factory=list)
+    limitation_notes: Optional[str] = None
 
 
 @dataclass
@@ -55,6 +60,24 @@ class ExpertInferenceEngine:
         self.categories = self.metadata.get("categories", {})
         self.pipeline = self.metadata.get("subsystem_pipeline", list(self.categories.keys()))
         self.gateways = self.metadata.get("subsystem_gateways", {})
+        self.boundary_rules = self.metadata.get("boundary_rules", {
+            "certainty_threshold": 0.60,
+            "domain": "Non-invasive electronic hardware triage and subsystem diagnostics for portable PCs",
+            "out_of_scope_conditions": [],
+            "limitation_statement": "If symptoms exceed non-invasive testing or fall below the 60% confidence threshold, physical bench instruments are required."
+        })
+        self.certainty_threshold = self.boundary_rules.get("certainty_threshold", 0.60)
+
+    @staticmethod
+    def combine_certainties(cf1: float, cf2: float) -> float:
+        """
+        MYCIN standard certainty combination for positive independent evidence:
+        CF_combined = CF1 + CF2 * (1 - CF1)
+        Clamped to [0.0, 1.0].
+        """
+        cf1 = max(0.0, min(1.0, float(cf1)))
+        cf2 = max(0.0, min(1.0, float(cf2)))
+        return round(cf1 + cf2 * (1.0 - cf1), 4)
 
     def get_node(self, node_id: str) -> Optional[Dict[str, Any]]:
         return self.nodes.get(node_id)
@@ -112,6 +135,16 @@ class ExpertInferenceEngine:
             # Check if this choice immediately resolves to a leaf diagnosis
             leaf = selected_option.get("leaf_diagnosis")
             if leaf:
+                cf = leaf.get("certainty_factor", 1.0)
+                is_det = leaf.get("is_deterministic", True)
+                competing = leaf.get("competing_hypotheses", [])
+                is_inconclusive = cf < self.certainty_threshold
+                limitation_notes = (
+                    f"Certainty ({int(cf*100)}%) is below the {int(self.certainty_threshold*100)}% decision threshold. "
+                    f"Symptoms remain ambiguous; lab bench isolation recommended."
+                    if is_inconclusive else None
+                )
+
                 result = DiagnosticResult(
                     title=leaf["title"],
                     issue=leaf["issue"],
@@ -119,7 +152,12 @@ class ExpertInferenceEngine:
                     urgency=leaf.get("urgency", "High"),
                     diy_friendly=leaf.get("diy_friendly", False),
                     estimated_cost=selected_option.get("estimated_cost_usd", "Varies"),
-                    history_trace=trace
+                    history_trace=trace,
+                    confidence_score=cf,
+                    is_deterministic=is_det,
+                    is_inconclusive=is_inconclusive,
+                    competing_hypotheses=competing,
+                    limitation_notes=limitation_notes
                 )
                 return {
                     "status": "concluded",
@@ -144,7 +182,12 @@ class ExpertInferenceEngine:
                     urgency="Routine",
                     diy_friendly=True,
                     estimated_cost="$0",
-                    history_trace=trace
+                    history_trace=trace,
+                    confidence_score=0.90,
+                    is_deterministic=False,
+                    is_inconclusive=False,
+                    competing_hypotheses=[],
+                    limitation_notes=None
                 )
                 return {
                     "status": "concluded",
@@ -310,6 +353,15 @@ class ExpertInferenceEngine:
     def advance_tree_audit(self, state: Dict[str, Any], action: str = "answer", answer_key: Optional[str] = None) -> TreeAuditStepResult:
         if action == "terminate_critical":
             critical = state.get("pending_critical") or {}
+            cf = critical.get("certainty_factor", 1.0)
+            is_det = critical.get("is_deterministic", True)
+            competing = critical.get("competing_hypotheses", [])
+            is_inconclusive = cf < self.certainty_threshold
+            limitation_notes = (
+                f"Certainty ({int(cf*100)}%) is below the {int(self.certainty_threshold*100)}% decision threshold. "
+                f"Physical bench testing recommended."
+                if is_inconclusive else None
+            )
             diag = DiagnosticResult(
                 title=critical.get("title", "Critical Hardware Defect"),
                 issue=critical.get("issue", "A critical hardware fault was detected requiring immediate shutdown or service."),
@@ -317,7 +369,12 @@ class ExpertInferenceEngine:
                 urgency=critical.get("urgency", "Critical"),
                 diy_friendly=critical.get("diy_friendly", False),
                 estimated_cost=critical.get("cost", "Varies"),
-                history_trace=state.get("trace", [])
+                history_trace=state.get("trace", []),
+                confidence_score=cf,
+                is_deterministic=is_det,
+                is_inconclusive=is_inconclusive,
+                competing_hypotheses=competing,
+                limitation_notes=limitation_notes
             )
             return TreeAuditStepResult(
                 status="concluded_early",
@@ -432,4 +489,25 @@ class ExpertInferenceEngine:
                 depth_level=1,
                 trace=state["trace"]
             )
+
+    def check_domain_boundary(self, symptom_text: str) -> Optional[Dict[str, Any]]:
+        """
+        Evaluates whether a reported symptom scenario exceeds the expert system's domain boundaries.
+        Returns a limitation dictionary if out of bounds, or None if within scope.
+        """
+        text = symptom_text.lower()
+        if re.search(r"\b(printer|scanner|paper|cartridge|toner)\b", text):
+            return {
+                "in_scope": False,
+                "reason": "Non-PC Peripheral: Printer/scanner hardware falls outside laptop motherboard & subsystem triage.",
+                "recommendation": "Consult dedicated printer diagnostic equipment and documentation."
+            }
+        if re.search(r"\b(micro-soldering|bga reballing|oscilloscope|layer separation|burnt pcb)\b", text):
+            return {
+                "in_scope": False,
+                "reason": "Component-Level Board Surgery: Issue requires specialized microscopic lab instruments.",
+                "recommendation": "Dispatch motherboard to an advanced electronics micro-soldering facility."
+            }
+        return None
+
 
