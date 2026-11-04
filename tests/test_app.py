@@ -9,7 +9,7 @@ def test_app_syntax_and_compilation():
 
 
 def test_app_contains_expert_system_ui_elements():
-    """Verify that app.py includes certainty meters, badges, and limitation warnings."""
+    """Verify that app.py includes certainty meters, badges, doctor test boxes, and prescription plans."""
     app_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app.py")
     with open(app_path, "r", encoding="utf-8") as f:
         content = f.read()
@@ -19,6 +19,9 @@ def test_app_contains_expert_system_ui_elements():
     assert "Conditional Diagnostic Hypothesis" in content
     assert "Domain Limitation Warning" in content
     assert "Differential Diagnoses / Competing Hypotheses" in content
+    assert "Doctor's Order: Prescribed Diagnostic Desk Test" in content
+    assert "Doctor's Prescription & Actionable Treatment Plan" in content
+
 
 
 def test_post_triage_audit_button_mode_switch():
