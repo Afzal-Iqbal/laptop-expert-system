@@ -49,6 +49,9 @@ def get_engine():
 engine = get_engine()
 
 # Initialize session states
+if "selected_mode" not in st.session_state:
+    st.session_state.selected_mode = "⚡ Emergency Fast-Triage"
+
 if "emergency_history" not in st.session_state:
     st.session_state.emergency_history = []
 
@@ -68,6 +71,7 @@ with st.sidebar:
     app_mode = st.radio(
         "Select Operating Mode:",
         ["⚡ Emergency Fast-Triage", "🔍 Cascading Decision-Tree Audit"],
+        key="selected_mode",
         help="Emergency mode finds the root cause quickly with early exit. Cascading tree audit traverses all 7 subsystems with deep component drill-downs."
     )
 
@@ -203,9 +207,21 @@ if app_mode == "⚡ Emergency Fast-Triage":
             })
         st.table(pd.DataFrame(trace_data))
 
-        if st.button("🔄 Start New Triage Session", type="primary", use_container_width=True):
-            st.session_state.emergency_history = []
-            st.rerun()
+        st.divider()
+        st.subheader("🩺 Post-Diagnosis Hardware Inspection")
+        st.info("Primary issue triage is complete. Would you like to conduct the comprehensive 50-Point Quality Assurance audit across all remaining subsystems?")
+        col_audit, col_new = st.columns(2)
+        with col_audit:
+            if st.button("🔍 Launch Full 50-Point Subsystem Audit", use_container_width=True):
+                st.session_state.selected_mode = "🔍 Cascading Decision-Tree Audit"
+                s, r = engine.start_tree_audit()
+                st.session_state.tree_audit_state = s
+                st.session_state.tree_audit_step = r
+                st.rerun()
+        with col_new:
+            if st.button("🔄 Start New Triage Session", type="primary", use_container_width=True):
+                st.session_state.emergency_history = []
+                st.rerun()
 
 
 # ==============================================================================

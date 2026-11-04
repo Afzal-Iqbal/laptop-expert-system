@@ -82,3 +82,36 @@ def test_tree_audit_critical_intercept_preserves_certainty(engine):
     assert result.confidence_score == 0.85
     assert result.is_deterministic is False
     assert len(result.competing_hypotheses) == 3
+
+
+def test_emergency_memory_path_never_leaks_to_foreign_subsystem(engine):
+    """Verify that acute memory triage stays 100% within memory_performance and never asks foreign questions."""
+    history = [("q_emergency_triage", "memory")]
+    step = engine.process_emergency_step(history)
+    assert step["status"] == "in_progress"
+    assert step["current_node"]["category"] == "memory_performance"
+    assert step["current_node"]["id"] == "q_post_beeps"
+
+    # Step 2: Post beeps normal -> proceeds to RAM recognized
+    history.append(("q_post_beeps", "no_beeps_normal"))
+    step = engine.process_emergency_step(history)
+    assert step["status"] == "in_progress"
+    assert step["current_node"]["category"] == "memory_performance"
+    assert step["current_node"]["id"] == "q_ram_recognized"
+
+    # Step 3: RAM recognized ok -> proceeds to random freezing
+    history.append(("q_ram_recognized", "full_ram_ok"))
+    step = engine.process_emergency_step(history)
+    assert step["status"] == "in_progress"
+    assert step["current_node"]["category"] == "memory_performance"
+    assert step["current_node"]["id"] == "q_random_freezing"
+
+    # Step 4: No freezing reported -> concludes domain-scoped clean bill of health without asking keyboard/wifi
+    history.append(("q_random_freezing", "no_freezing"))
+    step = engine.process_emergency_step(history)
+    assert step["status"] == "concluded"
+    result: DiagnosticResult = step["result"]
+    assert "Memory & System Performance" in result.title
+    assert result.confidence_score == 0.9
+
+

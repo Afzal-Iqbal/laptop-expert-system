@@ -60,10 +60,20 @@ def run_emergency_cli(engine: ExpertInferenceEngine):
             for idx, step in enumerate(res.remediation, 1):
                 print(f"  {idx}. {step}")
 
-            print("\n--- [Inference Trace: How This Was Derived] ---")
-            for t in res.history_trace:
-                print(f"  Step {t['step']}: {t['title']} -> Selected: '{t['chosen_label']}'")
             print("=" * 65 + "\n")
+
+            # Post-diagnosis inspection offer
+            print("--- [🩺 Post-Diagnosis Preventive Hardware Inspection] ---")
+            print("Primary issue triage is complete. Would you like to run the")
+            print("comprehensive 50-point Quality Assurance audit on remaining subsystems?")
+            print("  (1) 🔍 Yes, run Full Subsystem Audit now")
+            print("  (2) 🚪 No, exit diagnostic session")
+            try:
+                post_choice = input("\nSelect [1 or 2]: ").strip()
+                if post_choice == "1":
+                    run_tree_audit_cli(engine, quick_healthy=False)
+            except (EOFError, KeyboardInterrupt):
+                pass
             break
 
         node = step_res["current_node"]
