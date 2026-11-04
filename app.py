@@ -210,18 +210,29 @@ if app_mode == "⚡ Emergency Fast-Triage":
         st.divider()
         st.subheader("🩺 Post-Diagnosis Hardware Inspection")
         st.info("Primary issue triage is complete. Would you like to conduct the comprehensive 50-Point Quality Assurance audit across all remaining subsystems?")
+        def launch_full_audit_callback():
+            st.session_state.selected_mode = "🔍 Cascading Decision-Tree Audit"
+            s, r = engine.start_tree_audit()
+            st.session_state.tree_audit_state = s
+            st.session_state.tree_audit_step = r
+
+        def reset_emergency_callback():
+            st.session_state.emergency_history = []
+
         col_audit, col_new = st.columns(2)
         with col_audit:
-            if st.button("🔍 Launch Full 50-Point Subsystem Audit", use_container_width=True):
-                st.session_state.selected_mode = "🔍 Cascading Decision-Tree Audit"
-                s, r = engine.start_tree_audit()
-                st.session_state.tree_audit_state = s
-                st.session_state.tree_audit_step = r
-                st.rerun()
+            st.button(
+                "🔍 Launch Full 50-Point Subsystem Audit",
+                on_click=launch_full_audit_callback,
+                width="stretch",
+            )
         with col_new:
-            if st.button("🔄 Start New Triage Session", type="primary", use_container_width=True):
-                st.session_state.emergency_history = []
-                st.rerun()
+            st.button(
+                "🔄 Start New Triage Session",
+                type="primary",
+                on_click=reset_emergency_callback,
+                width="stretch",
+            )
 
 
 # ==============================================================================
