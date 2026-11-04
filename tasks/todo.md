@@ -84,14 +84,14 @@
 **Description:** Update `cli.py` to display certainty ratings and domain limitations in the terminal runner. In both emergency triage and audit modes, display the confidence score (e.g., `95% Confidence [DETERMINISTIC]` vs. `75% Confidence [CONDITIONAL]`), list alternative competing hypotheses when present, and print warning banners when a diagnosis hits domain limitations or is inconclusive.
 
 **Acceptance criteria:**
-- [ ] Terminal summary outputs the confidence percentage and diagnostic nature (Deterministic vs Conditional).
-- [ ] When competing hypotheses exist, CLI prints a ranked list of alternative possibilities.
-- [ ] When `is_inconclusive=True` or a boundary is reached, CLI prints a limitation notice advising bench diagnostics.
-- [ ] CLI test suite in `tests/test_cli.py` is updated and passing.
+- [x] Terminal summary outputs the confidence percentage and diagnostic nature (Deterministic vs Conditional).
+- [x] When competing hypotheses exist, CLI prints a ranked list of alternative possibilities.
+- [x] When `is_inconclusive=True` or a boundary is reached, CLI prints a limitation notice advising bench diagnostics.
+- [x] CLI test suite in `tests/test_cli.py` is updated and passing.
 
 **Verification:**
-- [ ] Tests pass: `.venv/bin/pytest tests/test_cli.py`
-- [ ] Manual check: `.venv/bin/python cli.py --emergency` shows confidence and hypothesis output.
+- [x] Tests pass: `.venv/bin/pytest tests/test_cli.py`
+- [x] Manual check: `.venv/bin/python cli.py --emergency` shows confidence and hypothesis output.
 
 **Dependencies:** Task 3
 

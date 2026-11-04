@@ -34,10 +34,28 @@ def run_emergency_cli(engine: ExpertInferenceEngine):
             print("\n" + "=" * 65)
             print(f"🎯 DIAGNOSIS CONCLUDED: {res.title}")
             print("=" * 65)
+            conf_percent = int(res.confidence_score * 100)
+            det_label = "DETERMINISTIC (Physical Proof)" if res.is_deterministic else "CONDITIONAL (Heuristic Hypothesis)"
+            print(f"Certainty Factor:    {conf_percent}% [{det_label}]")
             print(f"Urgency:             [{res.urgency.upper()}]")
             print(f"Estimated Cost:      {res.estimated_cost}")
             print(f"DIY Friendly:        {'Yes (User Serviceable)' if res.diy_friendly else 'No (Professional Board Tech Required)'}")
+
+            if res.is_inconclusive or res.limitation_notes:
+                print("\n" + "!" * 65)
+                print("⚠️  SYSTEM LIMITATION WARNING:")
+                print(f"   {res.limitation_notes}")
+                print("!" * 65)
+
             print(f"\nRoot Cause:\n{res.issue}")
+
+            if res.competing_hypotheses:
+                print("\n--- [Differential Diagnoses / Competing Hypotheses] ---")
+                for h_idx, hyp in enumerate(res.competing_hypotheses, 1):
+                    hyp_conf = int(hyp.get("confidence", 0) * 100)
+                    print(f"  {h_idx}. {hyp['title']} ({hyp_conf}% certainty)")
+                    print(f"     Differentiator: {hyp.get('differentiator', 'N/A')}")
+
             print("\nStep-by-Step Remediation Plan:")
             for idx, step in enumerate(res.remediation, 1):
                 print(f"  {idx}. {step}")
@@ -109,9 +127,27 @@ def run_tree_audit_cli(engine: ExpertInferenceEngine, quick_healthy: bool = Fals
             print("\n" + "=" * 65)
             print(f"🛑 AUDIT TERMINATED EARLY: {res.title}")
             print("=" * 65)
+            conf_percent = int(res.confidence_score * 100)
+            det_label = "DETERMINISTIC (Physical Proof)" if res.is_deterministic else "CONDITIONAL (Heuristic Hypothesis)"
+            print(f"Certainty Factor:    {conf_percent}% [{det_label}]")
             print(f"Urgency:        [{res.urgency.upper()}]")
             print(f"Est. Cost:      {res.estimated_cost}")
+
+            if res.is_inconclusive or res.limitation_notes:
+                print("\n" + "!" * 65)
+                print("⚠️  SYSTEM LIMITATION WARNING:")
+                print(f"   {res.limitation_notes}")
+                print("!" * 65)
+
             print(f"\nRoot Cause:\n{res.issue}")
+
+            if res.competing_hypotheses:
+                print("\n--- [Differential Diagnoses / Competing Hypotheses] ---")
+                for h_idx, hyp in enumerate(res.competing_hypotheses, 1):
+                    hyp_conf = int(hyp.get("confidence", 0) * 100)
+                    print(f"  {h_idx}. {hyp['title']} ({hyp_conf}% certainty)")
+                    print(f"     Differentiator: {hyp.get('differentiator', 'N/A')}")
+
             print("\nStep-by-Step Remediation Plan:")
             for idx, step in enumerate(res.remediation, 1):
                 print(f"  {idx}. {step}")
@@ -206,9 +242,9 @@ def main():
         if choice == "1":
             run_emergency_cli(engine)
         elif choice == "2":
-            run_audit_cli(engine, quick_healthy=False)
+            run_tree_audit_cli(engine, quick_healthy=False)
         elif choice == "3":
-            run_audit_cli(engine, quick_healthy=True)
+            run_tree_audit_cli(engine, quick_healthy=True)
         elif choice == "4":
             print("Exiting LapDoc. Goodbye!")
             sys.exit(0)
