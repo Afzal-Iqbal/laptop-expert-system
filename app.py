@@ -24,27 +24,6 @@ st.markdown("""
         color: #546e7a;
         margin-bottom: 22px;
     }
-    .doctor-card {
-        background-color: #f0f7ff;
-        border-radius: 10px;
-        padding: 18px;
-        border-left: 5px solid #0288d1;
-        margin-bottom: 18px;
-    }
-    .prescription-box {
-        background-color: #f1f8e9;
-        border: 2px solid #81c784;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    .test-box {
-        background-color: #e8f4fd;
-        border: 2px solid #29b6f6;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 18px;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -70,8 +49,7 @@ if "tree_audit_state" not in st.session_state or "tree_audit_step" not in st.ses
 
 # Sidebar Configuration - Patient Intake & Clinic Setup
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/stethoscope.png", width=64)
-    st.title("LapDoc Physician")
+    st.title("🩺 LapDoc Physician")
     st.markdown("**Clinical Hardware Diagnostic Consultations & Preventive Physicals**")
     st.divider()
 
@@ -103,10 +81,6 @@ with st.sidebar:
     processor = st.selectbox(
         "Processor Platform:",
         ["Intel Core (12th-14th Gen / Ultra)", "Intel Core (Legacy 8th-11th Gen)", "AMD Ryzen 5000/7000/8000", "Apple Silicon (M1/M2/M3/M4)", "Other"]
-    )
-    chassis_type = st.selectbox(
-        "Form Factor / Chassis:",
-        ["Standard Ultrabook / Thin & Light", "High-Performance Gaming Laptop", "Mobile Workstation", "2-in-1 Convertible / Touchscreen"]
     )
 
     st.divider()
@@ -187,7 +161,6 @@ if app_mode == "⚡ Emergency Fast-Triage":
 
     else:
         res: DiagnosticResult = step_res["result"]
-        report = engine.generate_doctor_report(res, brand=brand, processor=processor)
 
         st.success("🎯 Doctor's Diagnostic Consultation Completed!")
 

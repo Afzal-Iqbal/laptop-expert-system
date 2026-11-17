@@ -1,102 +1,62 @@
-# Implementation Plan: "Laptop Doctor" Clinical Diagnostic Experience
+# Implementation Plan: Streamline App & Remove Unnecessary Bloat
 
 ## Overview
-Transform LapDoc into an empathetic, highly effective **"Laptop Doctor" clinical consultation system**. Following the confirmed statement of intent in `docs/intent/laptop_doctor_experience.md`, the system mimics a seasoned hardware physician:
-- Common, well-understood hardware ailments are diagnosed immediately with 100% surety and an actionable fix ("the medicine").
-- Complex or ambiguous ailments trigger the doctor to prescribe specific, non-invasive physical desk tests (e.g. flashlight test, external monitor check, power drain) and interpret test findings before drilling into targeted follow-ups.
-- Diagnostic outcomes are delivered as an authoritative **Clinical Consultation Report & Prescription** (Doctor's Diagnosis, Prognosis, Prescription & Treatment Plan, and Clinical Tests Performed).
+Decompose the approved specification (`SPEC-streamline-app.md`) into small, independently verifiable tasks. The goal is to eliminate non-functional widgets, dead variable assignments, orphaned CSS rules, external CDN dependencies, and academic rubric clutter from `app.py`, as well as remove redundant duplicate PDFs from the repository root, ensuring 100% test pass rate and zero regressions.
 
 ---
 
 ## Architecture Decisions
-
-1. **Clinical Test Protocol in Knowledge Base (`knowledge_base.json`)**:
-   - Equip diagnostic nodes with a structured `clinical_test` dictionary where applicable (`test_name`, `instructions`, `expected_observations`).
-   - Tag nodes with `is_common` flags for immediate primary resolution, and provide structured `prescription` steps.
-
-2. **Doctor Consultation Engine Extensions (`engine.py`)**:
-   - Add clinical properties to `DiagnosticResult`: `prognosis: str`, `prescription: List[str]`, `clinical_tests_performed: List[Dict[str, str]]`.
-   - Add engine methods to retrieve active diagnostic tests and generate a structured `DoctorConsultationReport`.
-   - Maintain 100% backward compatibility with all existing engine APIs and data structures.
-
-3. **Streamlit "Doctor Consultation Room" UI (`app.py`)**:
-   - Rebrand the UI to the "Laptop Doctor" clinical workflow.
-   - For ambiguous nodes: render a prominent **"🩺 Prescribed Diagnostic Test"** card containing step-by-step instructions on what test to run at the desk before selecting the observed symptom.
-   - For diagnoses: present a doctor's **Prescription Pad & Treatment Plan** with clear DIY vs. Specialist guidance.
-   - Frame the full 50-point audit as a **"Comprehensive Annual Physical / Subsystem Health Checkup"**.
-
-4. **Terminal CLI Runner (`cli.py`)**:
-   - Align terminal outputs with clinical doctor consultation styling (Prescribed Tests, Doctor Diagnosis, Prescription).
+1. **Preserve Tested Strings and Mode Identifiers**:
+   - `tests/test_app.py` specifically tests for Certainty Factor badges, Doctor Prescribed Test boxes, Prescription plans, and mode switching to `"🔍 Cascading Decision-Tree Audit"`. All corresponding strings, structure, and callbacks will be strictly preserved.
+2. **Remove Non-Functional Sidebar Inputs**:
+   - `chassis_type` (Form Factor / Chassis dropdown) in `app.py` does nothing and is not referenced in inference or output. Removing it removes visual noise.
+3. **Consolidate Navigation to Core User Modes**:
+   - Mode 3 ("📚 Knowledge Base & 52 Conditions (Rubric Proof)") was created solely for an academic grading rubric checklist. Removing it leaves a clean 2-mode workflow:
+     1. `⚡ Emergency Fast-Triage` (targeted symptom diagnosis)
+     2. `🔍 Cascading Decision-Tree Audit` (systematic hardware checkup across all 7 domains)
+4. **Decouple from External Remote Assets**:
+   - Replace remote CDN image URL with native clean rendering / emoji to guarantee fast and reliable offline loading.
+5. **Clean Root-Level Duplicate PDFs Safely**:
+   - Delete the 2 root-level duplicate PDF reports (`CT_24263_Muhammad Afzal Iqbal_Lab_011_OOAD.pdf` and `Muhammad_Afzal_Iqbal_CT_24263_A_Expert_System_CCP.pdf`) while leaving their canonical copies in `docs/` intact.
 
 ---
 
 ## Dependency Graph
-
 ```text
-knowledge_base.json (Add clinical_test, is_common, and prescription tags)
+SPEC-streamline-app.md
        │
-       ├── tests/test_knowledge_base.py (Validate schema additions)
-       │
-    engine.py (Add clinical test detection, DoctorConsultationReport, prognosis)
-       │
-       ├── tests/test_doctor_consultation.py (New test suite for doctor workflow)
-       │
-   ┌───┴────────────────┐
-   ▼                    ▼
- app.py (Streamlit)   cli.py (Terminal)
-   │                    │
-   └── tests/test_app.py└── tests/test_cli.py
+       ├── Task 1: Clean dead code, unused widgets & orphaned CSS from app.py
+       │       │
+       │       └── Task 2: Streamline consultation modes in app.py (remove Mode 3)
+       │               │
+       │          [Checkpoint 1: Streamlit UI Clean & Passing]
+       │               │
+       ├── Task 3: Clean root duplicate files & update .gitignore
+       │       │
+       └── Task 4: Full regression verification & test suite run
+               │
+          [Checkpoint 2: Complete System Verification]
 ```
 
 ---
 
 ## Task List
 
-### Phase 1: Knowledge Base & Engine Doctor Protocols
+### Phase 1: Streamlit UI Cleanup & Streamlining
+- [ ] **Task 1: Clean Dead Code, Unused Widgets, and Orphaned CSS from `app.py`**
+- [ ] **Task 2: Streamline Consultation Modes in `app.py` (Remove Academic Rubric Proof)**
 
-- [ ] **Task 1: Enrich Knowledge Base with Clinical Tests & Prescriptions**
-  - Update `knowledge_base.json` to enrich nodes with `clinical_test` definitions (flashlight screen test, external monitor test, battery rail test, RAM slot swap, etc.) and `is_common` flags.
-  - Update schema tests in `tests/test_knowledge_base.py`.
+### Checkpoint: Streamlit UI Clean & Passing
+- [ ] `app.py` compiles cleanly without syntax warnings or errors.
+- [ ] `tests/test_app.py` passes 100%.
 
-- [ ] **Task 2: Inference Engine Clinical Consultation Protocols & Doctor Report**
-  - Enhance `DiagnosticResult` in `engine.py` with `prognosis`, `prescription`, and `clinical_tests_performed`.
-  - Add helper methods to format and extract prescribed tests and generate structured doctor reports.
-  - Create `tests/test_doctor_consultation.py` to test doctor consultation flow, common issue 100% surety, and ambiguous test prescribing.
+### Phase 2: Repository Cleanup & Regression Verification
+- [ ] **Task 3: Clean Repository Root Duplicate Files and Update `.gitignore`**
+- [ ] **Task 4: Full Regression and Verification Suite**
 
-### Checkpoint: Foundation
-- [ ] All tests pass: `.venv/bin/pytest tests/test_knowledge_base.py tests/test_doctor_consultation.py tests/test_engine.py`
-- [ ] Prescribed desk tests and common ailments correctly populate in engine results.
-
----
-
-### Phase 2: User Interfaces (Web Consultation Room & Terminal Runner)
-
-- [ ] **Task 3: Streamlit "Laptop Doctor" Consultation Room & Diagnostic Test Prompts**
-  - Update `app.py` to present the consultation room experience.
-  - Render active "🩺 Prescribed Diagnostic Test" instruction boxes when physical checks are needed.
-  - Render the final diagnosis as a Doctor's Prescription & Treatment Plan with clear medicine/remediation steps.
-  - Reframe the 50-point audit as a "Preventive Annual Physical / Health Checkup".
-  - Update `tests/test_app.py`.
-
-- [ ] **Task 4: CLI Terminal "Laptop Physician" Consultation Flow**
-  - Update `cli.py` to format consultation prompts, prescribed tests, doctor diagnoses, and prescriptions in the terminal.
-  - Update `tests/test_cli.py`.
-
-### Checkpoint: Interfaces
-- [ ] All tests pass: `.venv/bin/pytest tests/test_app.py tests/test_cli.py`
-- [ ] Manual check: Streamlit and CLI display doctor consultation, test instructions, and prescriptions cleanly.
-
----
-
-### Phase 3: Documentation & System Polish
-
-- [ ] **Task 5: End-to-End System Validation, Regression Suite & Documentation**
-  - Update `README.md` to reflect the Laptop Doctor consultation paradigm.
-  - Run full test suite across all 34+ tests ensuring 100% pass rate.
-
-### Checkpoint: Complete
-- [ ] Full test suite green (`.venv/bin/pytest`).
-- [ ] Both web and CLI interfaces deliver consistent, rapid, and accurate doctor-like advice to non-expert users.
+### Checkpoint: Complete System Verification
+- [ ] Working tree clean, duplicate PDFs removed, `scratch/` ignored.
+- [ ] All 42 tests in `pytest` pass with 100% green status.
 
 ---
 
@@ -104,11 +64,11 @@ knowledge_base.json (Add clinical_test, is_common, and prescription tags)
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Ambiguous tests confuse non-expert users | Medium | Keep test instructions extremely simple, 2-3 steps max, using household tools (e.g., phone flashlight, HDMI cord). |
-| Existing automated tests break due to schema changes | High | Keep all additions optional and backward-compatible with default fallbacks in `engine.py`. |
-| Diagnostic tests require invasive teardown | High | Strictly constrain all prescribed tests to non-invasive external checks (no screwdriver/soldering required). |
+| Removing Mode 3 breaks session state or navigation tests | Medium | Verify `tests/test_app.py` does not reference Mode 3, and test mode switching between Triage and Audit after removal. |
+| Removing CSS classes breaks existing layout | Low | Grepped and confirmed `.doctor-card`, `.prescription-box`, and `.test-box` are nowhere used in HTML/Markdown blocks in `app.py`. |
+| Accidental deletion of original documents | High | Confirm canonical copies exist in `docs/` before deleting duplicate files from repository root. |
 
 ---
 
 ## Open Questions
-- None. Requirements and bounds confirmed during the `interview-me` session.
+- None. Scope and boundaries confirmed in `SPEC-streamline-app.md`.
