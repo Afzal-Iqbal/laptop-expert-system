@@ -96,6 +96,27 @@
 
 ---
 
-## Checkpoint: Complete System Verification (After Task 4)
+## Task 5: Update Documentation & Final Polish
+
+**Description:** Update `README.md` to reflect the streamlined application (clean 2-mode consultation experience, offline-native assets, and minimal configuration). Perform final regression run to ensure complete project health.
+
+**Acceptance criteria:**
+- [x] `README.md` documents the clean 2-mode diagnostic workflow and offline capability.
+- [x] Full test suite passes: `.venv/bin/pytest`.
+
+**Verification:**
+- [x] Tests pass: `.venv/bin/pytest`
+- [x] Documentation view: `README.md` reflects current application state.
+
+**Dependencies:** Tasks 1, 2, 3, 4
+
+**Files likely touched:**
+- `README.md`
+
+**Estimated scope:** Small (1 file)
+
+---
+
+## Checkpoint: Complete System Verification & Polish (After Task 5)
 - [x] 100% of tests green in `.venv/bin/pytest`.
-- [x] App is streamlined, lean, and free of unnecessary code and assets.
+- [x] App and documentation are streamlined, lean, and free of unnecessary code and assets.

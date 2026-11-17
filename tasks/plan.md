@@ -43,20 +43,24 @@ SPEC-streamline-app.md
 ## Task List
 
 ### Phase 1: Streamlit UI Cleanup & Streamlining
-- [ ] **Task 1: Clean Dead Code, Unused Widgets, and Orphaned CSS from `app.py`**
-- [ ] **Task 2: Streamline Consultation Modes in `app.py` (Remove Academic Rubric Proof)**
+- [x] **Task 1: Clean Dead Code, Unused Widgets, and Orphaned CSS from `app.py`**
+- [x] **Task 2: Streamline Consultation Modes in `app.py` (Remove Academic Rubric Proof)**
 
 ### Checkpoint: Streamlit UI Clean & Passing
-- [ ] `app.py` compiles cleanly without syntax warnings or errors.
-- [ ] `tests/test_app.py` passes 100%.
+- [x] `app.py` compiles cleanly without syntax warnings or errors.
+- [x] `tests/test_app.py` passes 100%.
 
 ### Phase 2: Repository Cleanup & Regression Verification
-- [ ] **Task 3: Clean Repository Root Duplicate Files and Update `.gitignore`**
-- [ ] **Task 4: Full Regression and Verification Suite**
+- [x] **Task 3: Clean Repository Root Duplicate Files and Update `.gitignore`**
+- [x] **Task 4: Full Regression and Verification Suite**
 
-### Checkpoint: Complete System Verification
-- [ ] Working tree clean, duplicate PDFs removed, `scratch/` ignored.
-- [ ] All 42 tests in `pytest` pass with 100% green status.
+### Phase 3: Documentation & Final Polish
+- [x] **Task 5: Update Documentation & Final Polish**
+
+### Checkpoint: Complete System Verification & Documentation
+- [x] Working tree clean, duplicate PDFs removed, `scratch/` ignored.
+- [x] All 42 tests in `pytest` pass with 100% green status.
+- [x] Documentation accurately reflects the streamlined application.
 
 ---
 

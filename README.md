@@ -68,7 +68,7 @@ LapDoc operates on an intuitive doctor consultation model tailored for everyday,
 
 - **Declarative Knowledge Base (`knowledge_base.json`)**: Zero hardware logic is hardcoded in application code. All 52 nodes, clinical desk test instructions, gateway checks, and certainty factors are stored declaratively.
 - **Inference Engine (`engine.py`)**: Domain-independent forward-chaining engine supporting early-exit triage, cascading tree audits, certainty propagation, and doctor report generation.
-- **Web Consultation Room (`app.py`)**: Responsive Streamlit interface featuring prescribed test instruction cards, doctor's prescription pads, and interactive audit scorecards.
+- **Web Consultation Room (`app.py`)**: Streamlined, zero-latency Streamlit interface with two focused consultation workflows (Emergency Fast-Triage and 50-Point Annual Physical), featuring prescribed desk test instruction cards, doctor's prescription pads, offline-native assets, and interactive audit scorecards.
 - **Terminal Runner (`cli.py`)**: Complete command-line physician consultation suite.
 
 ---
