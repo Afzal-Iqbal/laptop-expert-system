@@ -10,19 +10,27 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS styling for the Laptop Doctor Consultation Room
+# Custom CSS styling for the Laptop Doctor Consultation Room (Clean Light Mode)
 st.markdown("""
 <style>
     .main-header {
-        font-size: 2.2rem;
+        font-size: 2.1rem;
         font-weight: 700;
-        color: #0277bd;
-        margin-bottom: 0px;
+        color: #0f172a;
+        margin-bottom: 2px;
+        letter-spacing: -0.02em;
     }
     .sub-header {
         font-size: 1.05rem;
-        color: #546e7a;
+        color: #475569;
         margin-bottom: 22px;
+        line-height: 1.5;
+    }
+    div[data-testid="stMetric"] {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 14px 16px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -84,7 +92,7 @@ with st.sidebar:
     st.caption(f"Clinical Knowledge Base: **{len(engine.nodes)-1} Diagnostic Protocols**")
     st.caption(f"Monitored Hardware Domains: **{len(engine.categories)} Subsystems**")
 
-    if st.button("🔄 Reset Diagnostic Session", use_container_width=True):
+    if st.button("🔄 Reset Diagnostic Session", width="stretch"):
         st.session_state.emergency_history = []
         s, r = engine.start_tree_audit()
         st.session_state.tree_audit_state = s
@@ -110,51 +118,52 @@ if app_mode == "⚡ Emergency Fast-Triage":
             st.markdown(f"**Consultation Step {curr_step}:** Hardware Domain → `{engine.categories.get(node['category'], node['category']).upper()}`")
         with col_back:
             if st.session_state.emergency_history:
-                if st.button("⬅ Previous Step", use_container_width=True):
+                if st.button("⬅ Previous Step", width="stretch"):
                     st.session_state.emergency_history.pop()
                     st.rerun()
 
         # Check if the Doctor Prescribes a Physical Clinical Test at the Desk
         clinical_test = node.get("clinical_test")
         if clinical_test:
-            instructions_html = "".join(f'<li style="margin-bottom: 4px;">{s}</li>' for s in clinical_test["instructions"])
+            instructions_html = "".join(f'<li style="margin-bottom: 6px; color: #1e293b;">{s}</li>' for s in clinical_test["instructions"])
             st.markdown(f"""
-            <div style="background-color: #f0f7ff; border: 2px solid #0288d1; border-radius: 10px; padding: 18px; margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; margin-bottom: 6px;">
+            <div style="background-color: #f0f9ff; border: 1.5px solid #0284c7; border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
                     <span style="font-size: 1.3rem; margin-right: 8px;">🩺</span>
-                    <h4 style="color: #01579b; margin: 0; font-weight: 700;">Doctor's Order: Prescribed Diagnostic Desk Test</h4>
+                    <h4 style="color: #0369a1; margin: 0; font-weight: 700;">Doctor's Order: Prescribed Diagnostic Desk Test</h4>
                 </div>
-                <p style="font-weight: 600; color: #0277bd; margin-bottom: 8px; font-size: 1.05rem;">🔬 {clinical_test['test_name']}</p>
-                <p style="color: #37474f; font-size: 0.95rem; margin-bottom: 6px;"><b>Step-by-Step Patient Instructions (Perform safely at your desk now):</b></p>
-                <ol style="margin-top: 0; margin-bottom: 10px; color: #263238; padding-left: 20px;">
+                <p style="font-weight: 600; color: #0284c7; margin-bottom: 8px; font-size: 1.05rem;">🔬 {clinical_test['test_name']}</p>
+                <p style="color: #334155; font-size: 0.95rem; margin-bottom: 6px;"><b>Step-by-Step Patient Instructions (Perform safely at your desk now):</b></p>
+                <ol style="margin-top: 0; margin-bottom: 12px; padding-left: 20px;">
                     {instructions_html}
                 </ol>
-                <div style="background-color: #e1f5fe; border-left: 4px solid #0288d1; padding: 8px 12px; border-radius: 4px;">
-                    <p style="margin: 0; font-size: 0.88rem; color: #01579b;"><b>What the Doctor is looking for:</b> {clinical_test['expected_observation']}</p>
+                <div style="background-color: #e0f2fe; border-left: 4px solid #0284c7; padding: 10px 14px; border-radius: 4px;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #0369a1;"><b>What the Doctor is looking for:</b> {clinical_test['expected_observation']}</p>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-        st.subheader(f"{node['title']}")
-        st.info(f"👉 **{node['question']}**")
+        with st.container(border=True):
+            st.subheader(f"{node['title']}")
+            st.info(f"👉 **{node['question']}**")
 
-        with st.expander("💡 Doctor's Clinical Rationale: Why is the doctor asking this?"):
-            st.write(node["why"])
-            st.caption("Expert systems provide complete diagnostic transparency so non-expert users understand every question.")
+            with st.expander("💡 Doctor's Clinical Rationale: Why is the doctor asking this?"):
+                st.write(node["why"])
+                st.caption("Expert systems provide complete diagnostic transparency so non-expert users understand every question.")
 
-        with st.form(f"form_step_{node['id']}"):
-            options_labels = [opt["label"] for opt in node["options"]]
-            selected_label = st.radio(
-                "Select observed symptom / test finding:",
-                options_labels,
-                index=0
-            )
+            with st.form(f"form_step_{node['id']}"):
+                options_labels = [opt["label"] for opt in node["options"]]
+                selected_label = st.radio(
+                    "Select observed symptom / test finding:",
+                    options_labels,
+                    index=0
+                )
 
-            submitted = st.form_submit_button("Report Finding to Doctor ➔", use_container_width=True)
-            if submitted:
-                selected_opt = next(opt for opt in node["options"] if opt["label"] == selected_label)
-                st.session_state.emergency_history.append((node["id"], selected_opt["key"]))
-                st.rerun()
+                submitted = st.form_submit_button("Report Finding to Doctor ➔", type="primary", width="stretch")
+                if submitted:
+                    selected_opt = next(opt for opt in node["options"] if opt["label"] == selected_label)
+                    st.session_state.emergency_history.append((node["id"], selected_opt["key"]))
+                    st.rerun()
 
     else:
         res: DiagnosticResult = step_res["result"]
@@ -163,23 +172,23 @@ if app_mode == "⚡ Emergency Fast-Triage":
 
         conf_percent = int(res.confidence_score * 100)
         common_tag = (
-            "<span style='background-color: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px solid #81c784; margin-right: 8px;'>🟢 Common Ailment (100% Surety)</span>"
+            "<span style='background-color: #f0fdf4; color: #15803d; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #bbf7d0; margin-right: 8px;'>🟢 Common Ailment (100% Surety)</span>"
             if res.is_common and res.confidence_score >= 0.95 else ""
         )
         badge_html = (
-            f"{common_tag}<span style='background-color: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px solid #81c784;'>🟢 Deterministic Physical Finding ({conf_percent}%)</span>"
+            f"{common_tag}<span style='background-color: #f0fdf4; color: #15803d; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #bbf7d0;'>🟢 Deterministic Physical Finding ({conf_percent}%)</span>"
             if res.is_deterministic else
-            f"<span style='background-color: #fff8e1; color: #f57f17; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px solid #ffe082;'>🟡 Conditional Diagnostic Hypothesis ({conf_percent}%)</span>"
+            f"<span style='background-color: #fffbeb; color: #b45309; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #fde68a;'>🟡 Conditional Diagnostic Hypothesis ({conf_percent}%)</span>"
         )
 
         st.markdown(f"""
-        <div style="background-color: #f1f8e9; border: 2px solid #81c784; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h2 style="color: #2e7d32; margin: 0;">🩺 Doctor's Diagnosis: {res.title}</h2>
+        <div style="background-color: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 22px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <h2 style="color: #0f172a; margin: 0; font-size: 1.5rem;">🩺 Doctor's Diagnosis: {res.title}</h2>
                 <div>{badge_html}</div>
             </div>
-            <p style="font-size: 1.15rem; color: #333; margin-bottom: 8px;"><b>Pathology / Root Cause:</b> {res.issue}</p>
-            <p style="font-size: 1.0rem; color: #1b5e20; margin-bottom: 0;"><b>Clinical Prognosis:</b> {res.prognosis}</p>
+            <p style="font-size: 1.05rem; color: #1e293b; margin-bottom: 8px;"><b>Pathology / Root Cause:</b> {res.issue}</p>
+            <p style="font-size: 1.0rem; color: #0284c7; margin-bottom: 0;"><b>Clinical Prognosis:</b> {res.prognosis}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -289,11 +298,11 @@ elif app_mode == "🔍 Cascading Decision-Tree Audit":
     for i, (col, (icon, name)) in enumerate(zip(stepper_cols, pipeline_names)):
         with col:
             if i < curr_idx:
-                st.markdown(f"<div style='text-align: center; color: #2e7d32; font-weight: bold;'>✓ {icon}<br><span style='font-size:0.8rem'>{name}</span></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: center; color: #16a34a; font-weight: 600;'>✓ {icon}<br><span style='font-size:0.8rem'>{name}</span></div>", unsafe_allow_html=True)
             elif i == curr_idx and step_res.status in ["in_progress", "critical_intercept"]:
-                st.markdown(f"<div style='text-align: center; color: #0288d1; font-weight: bold; border-bottom: 3px solid #0288d1;'>⏳ {icon}<br><span style='font-size:0.8rem'>{name}</span></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: center; color: #0284c7; font-weight: 700; border-bottom: 2.5px solid #0284c7;'>⏳ {icon}<br><span style='font-size:0.8rem'>{name}</span></div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<div style='text-align: center; color: #9e9e9e;'>⚪ {icon}<br><span style='font-size:0.8rem'>{name}</span></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: center; color: #94a3b8;'>⚪ {icon}<br><span style='font-size:0.8rem'>{name}</span></div>", unsafe_allow_html=True)
 
     st.divider()
 
@@ -302,9 +311,9 @@ elif app_mode == "🔍 Cascading Decision-Tree Audit":
         crit = step_res.critical_leaf
         st.error(f"### 🚨 Acute Medical Alert: Critical Hardware Defect Discovered ({crit['title']})")
         st.markdown(f"""
-        <div style="background-color: #ffebee; border: 2px solid #ef5350; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-            <p style="font-size: 1.1rem; color: #c62828; margin: 0;"><b>Root Fault:</b> {crit['issue']}</p>
-            <p style="margin-top: 10px; margin-bottom: 0;"><b>Domain:</b> {step_res.subsystem_name} | <b>Estimated Repair:</b> {crit.get('cost', 'Varies')}</p>
+        <div style="background-color: #fef2f2; border: 1.5px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+            <p style="font-size: 1.1rem; color: #991b1b; margin: 0; font-weight: 600;"><b>Root Fault:</b> {crit['issue']}</p>
+            <p style="margin-top: 8px; margin-bottom: 0; color: #7f1d1d;"><b>Domain:</b> {step_res.subsystem_name} | <b>Estimated Repair:</b> {crit.get('cost', 'Varies')}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -312,11 +321,11 @@ elif app_mode == "🔍 Cascading Decision-Tree Audit":
 
         col_term, col_cont = st.columns(2)
         with col_term:
-            if st.button("🛑 Terminate Now & View Treatment Plan", type="primary", use_container_width=True):
+            if st.button("🛑 Terminate Now & View Treatment Plan", type="primary", width="stretch"):
                 st.session_state.tree_audit_step = engine.advance_tree_audit(state, action="terminate_critical")
                 st.rerun()
         with col_cont:
-            if st.button("⏩ Continue Auditing Remaining Subsystems", use_container_width=True):
+            if st.button("⏩ Continue Auditing Remaining Subsystems", width="stretch"):
                 st.session_state.tree_audit_step = engine.advance_tree_audit(state, action="continue_critical")
                 st.rerun()
 
@@ -330,38 +339,39 @@ elif app_mode == "🔍 Cascading Decision-Tree Audit":
         with col_cat:
             st.markdown(f"**Current Domain:** `{step_res.subsystem_name.upper()}`")
         with col_depth:
-            st.markdown(f"<span style='background-color: #e3f2fd; color: #0d47a1; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold;'>{depth_badge}</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='background-color: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;'>{depth_badge}</span>", unsafe_allow_html=True)
 
         # Check if clinical test applies to this node
         clinical_test = node.get("clinical_test")
         if clinical_test:
-            instructions_html = "".join(f'<li style="margin-bottom: 4px;">{s}</li>' for s in clinical_test["instructions"])
+            instructions_html = "".join(f'<li style="margin-bottom: 6px; color: #1e293b;">{s}</li>' for s in clinical_test["instructions"])
             st.markdown(f"""
-            <div style="background-color: #f0f7ff; border: 2px solid #0288d1; border-radius: 8px; padding: 14px; margin-bottom: 16px;">
-                <p style="font-weight: 700; color: #01579b; margin-bottom: 6px;">🩺 Prescribed Physical Check: {clinical_test['test_name']}</p>
-                <ol style="margin-top: 0; margin-bottom: 8px; color: #263238; padding-left: 18px; font-size: 0.92rem;">
+            <div style="background-color: #f0f9ff; border: 1.5px solid #0284c7; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                <p style="font-weight: 700; color: #0369a1; margin-bottom: 6px;">🩺 Prescribed Physical Check: {clinical_test['test_name']}</p>
+                <ol style="margin-top: 0; margin-bottom: 10px; padding-left: 20px; font-size: 0.95rem;">
                     {instructions_html}
                 </ol>
-                <p style="margin: 0; font-size: 0.85rem; color: #0277bd;"><b>Observation:</b> {clinical_test['expected_observation']}</p>
+                <p style="margin: 0; font-size: 0.88rem; color: #0284c7;"><b>Observation:</b> {clinical_test['expected_observation']}</p>
             </div>
             """, unsafe_allow_html=True)
 
-        st.subheader(node["title"])
-        st.info(f"👉 **{node['question']}**")
+        with st.container(border=True):
+            st.subheader(node["title"])
+            st.info(f"👉 **{node['question']}**")
 
-        with st.expander("💡 Doctor's Clinical Rationale: Why is the doctor asking this?"):
-            st.write(node.get("why", "Evaluating subsystem health."))
-            st.caption("The examination drills deeper if symptoms are detected, or advances if nominal.")
+            with st.expander("💡 Doctor's Clinical Rationale: Why is the doctor asking this?"):
+                st.write(node.get("why", "Evaluating subsystem health."))
+                st.caption("The examination drills deeper if symptoms are detected, or advances if nominal.")
 
-        with st.form(f"tree_form_{node['id']}"):
-            opt_labels = [opt["label"] for opt in node["options"]]
-            selected_label = st.radio("Select observed condition / physical finding:", opt_labels, index=0)
+            with st.form(f"tree_form_{node['id']}"):
+                opt_labels = [opt["label"] for opt in node["options"]]
+                selected_label = st.radio("Select observed condition / physical finding:", opt_labels, index=0)
 
-            submitted = st.form_submit_button("Record Finding & Advance Physical ➔", use_container_width=True)
-            if submitted:
-                selected_opt = next(o for o in node["options"] if o["label"] == selected_label)
-                st.session_state.tree_audit_step = engine.advance_tree_audit(state, action="answer", answer_key=selected_opt["key"])
-                st.rerun()
+                submitted = st.form_submit_button("Record Finding & Advance Physical ➔", type="primary", width="stretch")
+                if submitted:
+                    selected_opt = next(o for o in node["options"] if o["label"] == selected_label)
+                    st.session_state.tree_audit_step = engine.advance_tree_audit(state, action="answer", answer_key=selected_opt["key"])
+                    st.rerun()
 
     # Case 3: Concluded Early (from Critical Intercept)
     elif step_res.status == "concluded_early":
@@ -370,19 +380,19 @@ elif app_mode == "🔍 Cascading Decision-Tree Audit":
 
         conf_percent = int(res.confidence_score * 100)
         badge_html = (
-            f"<span style='background-color: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px solid #81c784;'>🟢 Deterministic Physical Finding ({conf_percent}%)</span>"
+            f"<span style='background-color: #f0fdf4; color: #15803d; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #bbf7d0;'>🟢 Deterministic Physical Finding ({conf_percent}%)</span>"
             if res.is_deterministic else
-            f"<span style='background-color: #fff8e1; color: #f57f17; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px solid #ffe082;'>🟡 Conditional Diagnostic Hypothesis ({conf_percent}%)</span>"
+            f"<span style='background-color: #fffbeb; color: #b45309; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid #fde68a;'>🟡 Conditional Diagnostic Hypothesis ({conf_percent}%)</span>"
         )
 
         st.markdown(f"""
-        <div style="background-color: #ffebee; border: 2px solid #ef5350; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h2 style="color: #c62828; margin: 0;">🛑 Physical Interrupted Early: {res.title}</h2>
+        <div style="background-color: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                <h2 style="color: #991b1b; margin: 0; font-size: 1.4rem;">🛑 Physical Interrupted Early: {res.title}</h2>
                 <div>{badge_html}</div>
             </div>
-            <p style="font-size: 1.15rem; color: #333; margin-bottom: 8px;"><b>Pathology:</b> {res.issue}</p>
-            <p style="font-size: 1.0rem; color: #b71c1c; margin-bottom: 0;"><b>Prognosis:</b> {res.prognosis}</p>
+            <p style="font-size: 1.1rem; color: #1e293b; margin-bottom: 8px;"><b>Pathology:</b> {res.issue}</p>
+            <p style="font-size: 1.0rem; color: #991b1b; margin-bottom: 0;"><b>Prognosis:</b> {res.prognosis}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -427,7 +437,7 @@ elif app_mode == "🔍 Cascading Decision-Tree Audit":
             })
         st.table(pd.DataFrame(trace_data))
 
-        if st.button("🔄 Start New Annual Physical", type="primary", use_container_width=True):
+        if st.button("🔄 Start New Annual Physical", type="primary", width="stretch"):
             s, r = engine.start_tree_audit()
             st.session_state.tree_audit_state = s
             st.session_state.tree_audit_step = r
@@ -473,10 +483,10 @@ elif app_mode == "🔍 Cascading Decision-Tree Audit":
             data=scorecard.summary_markdown,
             file_name=f"LapDoc_Physical_{brand.split()[0]}_Scorecard.md",
             mime="text/markdown",
-            use_container_width=True
+            width="stretch"
         )
 
-        if st.button("🔄 Restart Annual Physical", type="primary", use_container_width=True):
+        if st.button("🔄 Restart Annual Physical", type="primary", width="stretch"):
             s, r = engine.start_tree_audit()
             st.session_state.tree_audit_state = s
             st.session_state.tree_audit_step = r
