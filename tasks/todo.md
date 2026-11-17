@@ -28,12 +28,12 @@
 **Description:** Remove the 3rd mode ("📚 Knowledge Base & 52 Conditions (Rubric Proof)") from `app.py`. Consolidate the consultation service radio selector in the sidebar to only the 2 real user-facing diagnostic workflows (`⚡ Emergency Fast-Triage` and `🔍 Cascading Decision-Tree Audit`). Remove the academic rubric checklist and 52-condition explorer dataframe from lines 519-587.
 
 **Acceptance criteria:**
-- [ ] `app_mode` radio options contain only `⚡ Emergency Fast-Triage` and `🔍 Cascading Decision-Tree Audit`.
-- [ ] The academic rubric table, KPI cards, and condition explorer block (lines 519-587) are removed from `app.py`.
-- [ ] Triage flow, 50-point audit flow, and mode switching between them remain 100% functional.
+- [x] `app_mode` radio options contain only `⚡ Emergency Fast-Triage` and `🔍 Cascading Decision-Tree Audit`.
+- [x] The academic rubric table, KPI cards, and condition explorer block (lines 519-587) are removed from `app.py`.
+- [x] Triage flow, 50-point audit flow, and mode switching between them remain 100% functional.
 
 **Verification:**
-- [ ] Tests pass: `.venv/bin/pytest tests/test_app.py`
+- [x] Tests pass: `.venv/bin/pytest tests/test_app.py`
 
 **Dependencies:** Task 1
 
@@ -45,8 +45,8 @@
 ---
 
 ## Checkpoint: Streamlit UI Clean & Passing (After Tasks 1-2)
-- [ ] `app.py` compiles cleanly without errors: `.venv/bin/python -m py_compile app.py`
-- [ ] All UI tests in `tests/test_app.py` pass cleanly.
+- [x] `app.py` compiles cleanly without errors: `.venv/bin/python -m py_compile app.py`
+- [x] All UI tests in `tests/test_app.py` pass cleanly.
 
 ---
 
