@@ -55,13 +55,13 @@
 **Description:** Safely remove the two duplicate PDF report files from the repository root (`CT_24263_Muhammad Afzal Iqbal_Lab_011_OOAD.pdf` and `Muhammad_Afzal_Iqbal_CT_24263_A_Expert_System_CCP.pdf`), verifying that canonical copies remain safely preserved in `docs/`. Update `.gitignore` to ignore the `scratch/` directory and root-level PDFs.
 
 **Acceptance criteria:**
-- [ ] Canonical copies of both PDFs exist and are preserved in `docs/`.
-- [ ] Redundant 2.2MB duplicate PDFs in the repository root are removed.
-- [ ] `.gitignore` contains rules for `scratch/` and root `*.pdf`.
+- [x] Canonical copies of both PDFs exist and are preserved in `docs/`.
+- [x] Redundant 2.2MB duplicate PDFs in the repository root are removed.
+- [x] `.gitignore` contains rules for `scratch/` and root `*.pdf`.
 
 **Verification:**
-- [ ] Git status: `git status` shows clean tracking with no untracked duplicate PDFs or scratch folder.
-- [ ] File check: `ls docs/*.pdf` confirms canonical documents are intact.
+- [x] Git status: `git status` shows clean tracking with no untracked duplicate PDFs or scratch folder.
+- [x] File check: `ls docs/*.pdf` confirms canonical documents are intact.
 
 **Dependencies:** None
 
