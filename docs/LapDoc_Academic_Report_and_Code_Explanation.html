@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LapDoc: Academic Evaluation & Code Explanation Dossier</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-right {
+      content: "Page " counter(page);
+      font-size: 9pt;
+      color: #64748b;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    @bottom-left {
+      content: "LapDoc Expert System • Academic Dossier";
+      font-size: 9pt;
+      color: #64748b;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+  }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: #1e293b;
+    margin: 0;
+    padding: 0;
+  }
+
+  .page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Cover Page */
+  .cover {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px 20px 20px 20px;
+    box-sizing: border-box;
+    page-break-after: always;
+  }
+  .cover-header {
+    border-bottom: 3px solid #1e3a8a;
+    padding-bottom: 25px;
+  }
+  .cover-badge {
+    display: inline-block;
+    background-color: #1e3a8a;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 4px;
+    margin-bottom: 18px;
+  }
+  .cover-title {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 26pt;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #0f172a;
+    margin: 0 0 12px 0;
+  }
+  .cover-subtitle {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13pt;
+    font-weight: 400;
+    color: #475569;
+    line-height: 1.4;
+    margin: 0;
+  }
+  .cover-body {
+    margin: 40px 0;
+  }
+  .meta-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 9.5pt;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    row-gap: 8px;
+    column-gap: 12px;
+  }
+  .meta-label {
+    font-weight: 700;
+    color: #334155;
+  }
+  .meta-val {
+    color: #0f172a;
+  }
+  .cover-footer {
+    border-top: 1px solid #cbd5e1;
+    padding-top: 15px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 9pt;
+    color: #64748b;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #0f172a;
+  }
+  h1 {
+    font-size: 19pt;
+    font-weight: 800;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-top: 26px;
+    margin-bottom: 14px;
+  }
+  h2 {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  h3 {
+    font-size: 11.5pt;
+    font-weight: 600;
+    color: #334155;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  p {
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: justify;
+  }
+
+  /* Table of Contents */
+  .toc {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 18px 24px;
+    margin: 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .toc h2 {
+    margin-top: 0;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 6px;
+  }
+  .toc-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 9.5pt;
+    border-bottom: 1px dotted #e2e8f0;
+  }
+  .toc-title {
+    font-weight: 500;
+    color: #1e293b;
+  }
+  .toc-page {
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 9pt;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  th {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+    text-align: left;
+    padding: 7px 10px;
+    border: 1px solid #cbd5e1;
+  }
+  td {
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td {
+    background-color: #f8fafc;
+  }
+
+  /* Code Blocks */
+  pre {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    overflow-x: auto;
+    margin: 10px 0;
+    border: 1px solid #1e293b;
+  }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 9pt;
+    background-color: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid #e2e8f0;
+  }
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border: none;
+    font-size: 8.5pt;
+  }
+
+  /* Callout Boxes */
+  .callout {
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 9.5pt;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .callout-info {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #3b82f6;
+    color: #1e3a8a;
+  }
+  .callout-alert {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #ef4444;
+    color: #991b1b;
+  }
+  .callout-success {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+    color: #166534;
+  }
+  .callout-viva {
+    background-color: #faf5ff;
+    border: 1px solid #e9d5ff;
+    border-left: 4px solid #a855f7;
+    color: #581c87;
+  }
+  .callout-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Formula Block */
+  .formula-box {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid #0f172a;
+    border-radius: 4px;
+    padding: 10px 16px;
+    margin: 12px 0;
+    text-align: center;
+    font-family: 'Cambria Math', 'Times New Roman', serif;
+    font-size: 11pt;
+    color: #0f172a;
+  }
+
+  /* Diagram Box */
+  .diagram-box {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 14px 0;
+    text-align: center;
+    font-family: monospace;
+    font-size: 8.5pt;
+    white-space: pre;
+    color: #0f172a;
+    overflow-x: auto;
+    line-height: 1.25;
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= COVER PAGE ================= -->
+<div class="cover">
+  <div class="cover-header">
+    <div class="cover-badge">Academic Project & Technical Dossier</div>
+    <h1 class="cover-title">LapDoc: A Declarative Symbolic AI Expert System</h1>
+    <div class="cover-subtitle">Knowledge-Based Architecture, Inference Mechanics, and Code Walkthrough for Portable PC Hardware Fault Triage</div>
+  </div>
+
+  <div class="cover-body">
+    <div class="meta-box">
+      <div class="meta-grid">
+        <span class="meta-label">Domain:</span>
+        <span class="meta-val">Computer Hardware Diagnostic Engineering & Fault Triage</span>
+
+        <span class="meta-label">Paradigm:</span>
+        <span class="meta-val">Classical Symbolic Artificial Intelligence (Knowledge-Based Expert System)</span>
+
+        <span class="meta-label">Foundational Lineage:</span>
+        <span class="meta-val">Buchanan & Shortliffe MYCIN Inexact Reasoning & Rule-Based Model</span>
+
+        <span class="meta-label">Implementation:</span>
+        <span class="meta-val">Python 3.10+, Streamlit Web Interface, Standalone Terminal CLI</span>
+
+        <span class="meta-label">Target Audience:</span>
+        <span class="meta-val">Academic Review Board, Thesis Committee, Examination Viva Defense</span>
+
+        <span class="meta-label">Repository:</span>
+        <span class="meta-val">https://github.com/Afzal-Iqbal/laptop-expert-system</span>
+
+        <span class="meta-label">Date of Evaluation:</span>
+        <span class="meta-val">November 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-footer">
+    <span>LapDoc Systems Research & Engineering</span>
+    <span>Defensible Symbolic Artificial Intelligence</span>
+  </div>
+</div>
+
+<!-- ================= TABLE OF CONTENTS ================= -->
+<div class="toc page-break">
+  <h2>Table of Contents</h2>
+  <div class="toc-item"><span class="toc-title">1. Executive Summary & Abstract</span><span class="toc-page">1</span></div>
+  <div class="toc-item"><span class="toc-title">2. Theoretical Foundations of Knowledge-Based Expert Systems</span><span class="toc-page">2</span></div>
+  <div class="toc-item"><span class="toc-title">3. Procedural Script vs. True Symbolic Expert System</span><span class="toc-page">3</span></div>
+  <div class="toc-item"><span class="toc-title">4. Declarative Knowledge Engineering (knowledge_base.json)</span><span class="toc-page">4</span></div>
+  <div class="toc-item"><span class="toc-title">5. The Inference Engine Architecture (engine.py)</span><span class="toc-page">5</span></div>
+  <div class="toc-item"><span class="toc-title">6. Inexact Reasoning & Certainty Factor Calculus</span><span class="toc-page">6</span></div>
+  <div class="toc-item"><span class="toc-title">7. Explanation Facility & Working Memory ("Why" & "How")</span><span class="toc-page">7</span></div>
+  <div class="toc-item"><span class="toc-title">8. Limitation Awareness: "Knowing What It Knows"</span><span class="toc-page">8</span></div>
+  <div class="toc-item"><span class="toc-title">9. Why Symbolic AI Outperforms LLMs in Hardware Triage</span><span class="toc-page">9</span></div>
+  <div class="toc-item"><span class="toc-title">10. Academic Viva Defense Guide & Examination FAQ</span><span class="toc-page">10</span></div>
+  <div class="toc-item"><span class="toc-title">11. Annotated Core Code Listings</span><span class="toc-page">11</span></div>
+  <div class="toc-item"><span class="toc-title">12. Academic References</span><span class="toc-page">12</span></div>
+</div>
+
+<!-- ================= SECTION 1 ================= -->
+<h1>1. Executive Summary & Abstract</h1>
+<p>
+  <strong>LapDoc</strong> is a classical Knowledge-Based Expert System (KBES) developed for component-level fault isolation, electrical safety verification, and subsystem health scoring in portable personal computers. Developed within the classical symbolic artificial intelligence paradigm formulated by Feigenbaum, Buchanan, and Shortliffe, LapDoc solves a critical engineering problem: providing rapid, non-invasive, deterministic, and verifiable fault triage without requiring destructive disassembly or physical test probes in early diagnostic stages.
+</p>
+<p>
+  A frequent skepticism encountered during academic project defenses is the <em>"Wizard Fallacy"</em>: <em>Is the system truly an Artificial Intelligence system, or merely an elaborate sequence of hardcoded <code>if/elif/else</code> branches?</em>
+</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Core Academic Thesis</div>
+  LapDoc is an authentic Knowledge-Based Expert System. It strictly decouples declarative domain knowledge (stored in <code>knowledge_base.json</code>) from the domain-independent procedural inference engine (implemented in <code>engine.py</code>). Swapping the knowledge file transforms the engine into a medical, automotive, or industrial triage system without altering a single line of Python execution code.
+</div>
+
+<p>
+  LapDoc incorporates bidirectional explanation facilities (answering both <strong>WHY</strong> a question is being asked and <strong>HOW</strong> a conclusion was reached), certainty factor mathematics derived from Stanford's MYCIN project, explicit domain boundary detection, and a multi-subsystem audit scorecard.
+</p>
+
+<!-- ================= SECTION 2 ================= -->
+<h1>2. Theoretical Foundations of Knowledge-Based Systems</h1>
+<p>
+  In classical artificial intelligence literature (Russell & Norvig, 2020; Jackson, 1999), a classical Expert System consists of five interconnected subsystems. LapDoc implements every canonical component with strict modularity:
+</p>
+
+<div class="diagram-box">
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       LAPDOC EXPERT SYSTEM ARCHITECTURE                      │
+│                                                                             │
+│  ┌───────────────────────────────┐     ┌─────────────────────────────────┐  │
+│  │     KNOWLEDGE BASE (KB)       │     │         WORKING MEMORY          │  │
+│  │  • 52 Diagnostic Graph Nodes  │     │  • Active Session Assertions    │  │
+│  │  • Multi-Subsystem Taxonomy   │     │  • Accumulated Symptom Traces   │  │
+│  │  • Certainty Factors (CF)     │     │  • Dynamic Penalty Tallies      │  │
+│  │  • Clinical Desk Test Specs   │     │  • Verified Subsystem States    │  │
+│  └──────────────┬────────────────┘     └────────────────┬────────────────┘  │
+│                 │                                       │                   │
+│                 ▼                                       ▼                   │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                       INFERENCE ENGINE (engine.py)                    │  │
+│  │  • Forward-Chaining Directed Acyclic Graph (DAG) Traversal            │  │
+│  │  • Heuristic Short-Circuit Pruning (Emergency Triage)                 │  │
+│  │  • Shortliffe-Buchanan Certainty Factor Propagation Calculus          │  │
+│  │  • Cascading Subsystem Gateway Scheduling                             │  │
+│  └──────────────────────────────────┬────────────────────────────────────┘  │
+│                                     │                                       │
+│                                     ▼                                       │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                         EXPLANATION FACILITY                          │  │
+│  │  • "WHY": Justifies active hypothesis prior to user input             │  │
+│  │  • "HOW": Generates complete chronological deduction trace            │  │
+│  │  • Clinical Desk Test instructions & limitation notices               │  │
+│  └──────────────────────────────────┬────────────────────────────────────┘  │
+│                                     │                                       │
+│                                     ▼                                       │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                       USER INTERFACE LAYER                            │  │
+│  │  • Streamlit Web Dashboard (Reactive, Visual Meters, Radar Charts)    │  │
+│  │  • Terminal CLI (Interactive REPL, ANSI Colors, Automated CI Tests)   │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Classical Subsystem</th>
+      <th>Theoretical Purpose</th>
+      <th>LapDoc Implementation</th>
+      <th>Source Reference</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Knowledge Base</strong></td>
+      <td>Stores curated domain expertise declaratively without control structures.</td>
+      <td><code>knowledge_base.json</code>: 52 nodes, symptoms, remediations, costs, certainty weights.</td>
+      <td><code>knowledge_base.json</code></td>
+    </tr>
+    <tr>
+      <td><strong>Inference Engine</strong></td>
+      <td>Applies formal reasoning algorithms to match working memory against the rule base.</td>
+      <td><code>ExpertInferenceEngine</code>: DAG traversal, short-circuit pruning, certainty factor math.</td>
+      <td><code>engine.py:54-620</code></td>
+    </tr>
+    <tr>
+      <td><strong>Working Memory</strong></td>
+      <td>Dynamic state container holding temporary facts asserted during a diagnostic session.</td>
+      <td>History tuple sequence <code>(node_id, choice_key)</code> passed into engine methods.</td>
+      <td><code>engine.py:152-240</code></td>
+    </tr>
+    <tr>
+      <td><strong>Explanation Facility</strong></td>
+      <td>Provides transparency into the reasoning chain (MYCIN "Why" and "How" paradigms).</td>
+      <td><code>explain_question()</code> and <code>history_trace</code> chronological deduction audit.</td>
+      <td><code>engine.py:96-101</code></td>
+    </tr>
+    <tr>
+      <td><strong>User Interface</strong></td>
+      <td>Decoupled presentation boundary interacting with human operators.</td>
+      <td>Dual frontends: interactive Streamlit dashboard and standalone terminal CLI.</td>
+      <td><code>app.py</code> & <code>cli.py</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ================= SECTION 3 ================= -->
+<div class="page-break"></div>
+<h1>3. Procedural Script vs. True Symbolic Expert System</h1>
+<p>
+  During academic evaluation, examiners frequently interrogate the distinction between a script and an expert system. The epistemological differences are profound:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dimension</th>
+      <th>Procedural Script / Decision Wizard</th>
+      <th>LapDoc Symbolic Expert System</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Knowledge Locality</strong></td>
+      <td>Embedded in procedural code (<code>if/else</code> statements in application files).</td>
+      <td>Completely decoupled. Zero hardware facts reside in <code>engine.py</code>; all reside in <code>knowledge_base.json</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Reasoning Flexibility</strong></td>
+      <td>Single rigid tree path. Cannot support alternative traversal modes.</td>
+      <td>Dual reasoning engines: Rapid Emergency Early-Exit DAG + Cascading Gateway Subsystem Audit.</td>
+    </tr>
+    <tr>
+      <td><strong>Explanation Capability</strong></td>
+      <td>None or hardcoded console strings. Cannot explain its internal state.</td>
+      <td>Dynamic introspection. Can explain why a query matters and trace derivations backwards.</td>
+    </tr>
+    <tr>
+      <td><strong>Maintenance Overhead</strong></td>
+      <td>Altering a rule requires editing Python source, creating regression risks.</td>
+      <td>Domain experts edit JSON schema without touching engine or UI code.</td>
+    </tr>
+    <tr>
+      <td><strong>Handling Uncertainty</strong></td>
+      <td>Binary logic (True/False only). Fails when symptoms are ambiguous.</td>
+      <td>Shortliffe Certainty Factors ($0.0 \le CF \le 1.0$), competing hypotheses, and differential rankings.</td>
+    </tr>
+    <tr>
+      <td><strong>Domain Awareness</strong></td>
+      <td>Blind execution. Halts with uncaught exceptions or outputs erroneous leaves.</td>
+      <td>Explicit boundary definitions, threshold gating ($CF < 0.60$), and out-of-scope intercepts.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ================= SECTION 4 ================= -->
+<h1>4. Declarative Knowledge Engineering (knowledge_base.json)</h1>
+<p>
+  LapDoc's knowledge base contains 52 structured nodes across 7 core laptop hardware subsystems:
+</p>
+<ol>
+  <li><strong>Power Delivery & Charging Subsystem</strong> (AC adapter, DC-in jack, charging IC, battery health)</li>
+  <li><strong>Thermal Management & Cooling Subsystem</strong> (heatpipes, fan PWM, thermal paste, heatsink fins)</li>
+  <li><strong>Display & Video Pipeline</strong> (eDP flex cable, LED backlight inverter, discrete GPU, LCD matrix)</li>
+  <li><strong>Memory & Storage Subsystem</strong> (SO-DIMM RAM training, NVMe/SATA controller, SMART telemetry)</li>
+  <li><strong>Motherboard & Core Logic Subsystem</strong> (EC/KBC controller, BIOS/UEFI SPI ROM, RTC CMOS, power rails)</li>
+  <li><strong>Input/Output & Peripherals</strong> (USB host controller, keyboard matrix, precision trackpad, audio codec)</li>
+  <li><strong>Structural & Physical Integrity</strong> (hinge anchors, liquid spill detection, chassis grounding)</li>
+</ol>
+
+<h3>Declarative Node Schema Specification</h3>
+<pre><code>{
+  "id": "q_disp_backlight_test",
+  "category": "display",
+  "title": "Flashlight / Faint Image Backlight Inspection",
+  "question": "When illuminating the screen with a bright flashlight, do you see faint desktop icons?",
+  "why": "Distinguishes between a dead display panel / GPU failure and an intact LCD panel with a blown backlight fuse or inverter.",
+  "clinical_test": {
+    "test_name": "Direct Coaxial Flashlight Illumination Test",
+    "protocol": "Hold a smartphone flashlight 2 inches from the screen at a 45-degree angle in a dark room."
+  },
+  "options": [
+    {
+      "key": "faint_icons_visible",
+      "label": "Yes - Faint desktop graphics/text are visible under illumination",
+      "is_healthy": false,
+      "penalty": 20,
+      "estimated_cost_usd": "$45 - $95",
+      "leaf_diagnosis": {
+        "title": "Display Backlight Circuit Failure (Blown Inverter / Fuse)",
+        "issue": "LCD panel matrix functions, but LED backlight rail (VLED 19V) is open-circuit.",
+        "certainty_factor": 0.95,
+        "is_deterministic": true,
+        "urgency": "Medium",
+        "diy_friendly": true,
+        "remediation": [
+          "Inspect eDP ribbon cable for pin misalignment or crimping at display hinge.",
+          "Check motherboard backlight fuse (typically marked F1/F2 near LVDS connector) with DMM continuity."
+        ]
+      }
+    }
+  ]
+}</code></pre>
+
+<!-- ================= SECTION 5 ================= -->
+<div class="page-break"></div>
+<h1>5. The Inference Engine Architecture (engine.py)</h1>
+<p>
+  The inference engine implements two complementary reasoning paradigms:
+</p>
+<ol>
+  <li>
+    <strong>Forward-Chaining Early-Exit DAG (Emergency Mode)</strong>:
+    Traverses candidate rules from root symptom assertion (<code>q_emergency_triage</code>) towards terminal leaves. If a choice contains a <code>leaf_diagnosis</code>, the engine immediately terminates traversal and derives the diagnosis, pruning irrelevant questions.
+  </li>
+  <li>
+    <strong>Cascading Gateway Subsystem Pipeline (Comprehensive Mode)</strong>:
+    Iterates systematically across each of the 7 hardware subsystems. Each subsystem begins with a <em>Gateway Node</em>. If the gateway is asserted healthy, the entire subsystem branch is pruned ($O(1)$ fast path). If anomalous, the engine branches deeper into clinical verification nodes.
+  </li>
+</ol>
+
+<div class="diagram-box">
+               [ User Asserts Problem: "Laptop Will Not Boot" ]
+                                      │
+                                      ▼
+                        ┌───────────────────────────┐
+                        │   q_emergency_triage      │
+                        └─────────────┬─────────────┘
+                                      │
+              ┌───────────────────────┴───────────────────────┐
+              │ [Power LED On, Screen Dark]                   │ [Liquid Spill Incident]
+              ▼                                               ▼
+  ┌───────────────────────────┐                   ┌───────────────────────────┐
+  │   q_screen_faint_check    │                   │ CRITICAL EMERGENCY LEAF   │
+  └─────────────┬─────────────┘                   │  • Immediate DC Unplug    │
+                │                                 │  • Battery Disconnect     │
+     ┌──────────┴──────────┐                      │  • Ultrasonic Isopropyl   │
+     │ [Faint Icons Seen]  │ [No Faint Image]     │  • Certainty: 1.0 (Exact) │
+     ▼                     ▼                      └───────────────────────────┘
+┌─────────────────┐   ┌───────────────────────────┐
+│ LEAF DIAGNOSIS: │   │   q_external_hdmi_check   │
+│ Blown Backlight │   └─────────────┬─────────────┘
+│ Inverter / Fuse │                 │
+│ Certainty: 0.95 │       ┌─────────┴─────────┐
+└─────────────────┘       │ [HDMI Works]      │ [HDMI Also Blank]
+                          ▼                   ▼
+                  ┌───────────────┐   ┌───────────────────────────────┐
+                  │ LEAF: Damaged │   │ CONDITIONAL HYPOTHESIS:       │
+                  │ eDP Cable /   │   │ RAM Training / Corrupted BIOS │
+                  │ Panel Matrix  │   │ Certainty: 0.65 (Ambiguous)   │
+                  └───────────────┘   └───────────────────────────────┘
+</div>
+
+<!-- ================= SECTION 6 ================= -->
+<h1>6. Inexact Reasoning & Certainty Factor Calculus</h1>
+<p>
+  In hardware fault diagnostics, human observation is frequently incomplete or ambiguous. LapDoc avoids naive binary assumptions by adopting the Shortliffe & Buchanan (1975) Certainty Factor ($CF$) model formulated for Stanford's MYCIN project.
+</p>
+
+<h3>Certainty Factor Representation</h3>
+<p>
+  Every rule assertion yields a Certainty Factor $CF \in [0.0, 1.0]$:
+</p>
+<ul>
+  <li><strong>$CF = 1.0$ (Deterministic Certainty)</strong>: Physical, unambiguous empirical proof (e.g., fractured DC jack pin, visibly swollen Li-ion pouch cell).</li>
+  <li><strong>$0.60 \le CF < 1.0$ (Strong Hypothesis)</strong>: Highly correlated symptom requiring secondary confirmation (e.g., faint screen under flashlight indicates backlight failure with $CF = 0.95$).</li>
+  <li><strong>$CF < 0.60$ (Inconclusive Differential State)</strong>: Ambiguous symptoms compatible with multiple root causes (e.g., black screen with spinning fan).</li>
+</ul>
+
+<h3>Independent Evidence Combination Formula</h3>
+<p>
+  When two independent pieces of corroborating evidence support the same fault hypothesis, their certainty values are combined using the monotonic MYCIN operator:
+</p>
+
+<div class="formula-box">
+  $$CF_{combined}(CF_1, CF_2) = CF_1 + CF_2 \cdot (1.0 - CF_1) \quad 	ext{where } CF_1, CF_2 \ge 0$$
+</div>
+
+<p>
+  In <code>engine.py</code>, this is implemented as an atomic static method:
+</p>
+
+<pre><code>@staticmethod
+def combine_certainties(cf1: float, cf2: float) -> float:
+    """
+    MYCIN standard certainty combination for positive independent evidence:
+    CF_combined = CF1 + CF2 * (1 - CF1)
+    Clamped strictly to [0.0, 1.0].
+    """
+    cf1 = max(0.0, min(1.0, float(cf1)))
+    cf2 = max(0.0, min(1.0, float(cf2)))
+    return round(cf1 + cf2 * (1.0 - cf1), 4)</code></pre>
+
+<p>
+  <em>Mathematical Property</em>: The combination function is commutative ($CF(a,b) = CF(b,a)$), associative ($CF(a, CF(b,c)) = CF(CF(a,b), c)$), and asymptotically approaches $1.0$ without ever exceeding certainty boundaries.
+</p>
+
+<!-- ================= SECTION 7 ================= -->
+<div class="page-break"></div>
+<h1>7. Explanation Facility & Working Memory ("Why" & "How")</h1>
+<p>
+  A cornerstone of Knowledge Engineering is that an expert system must explain its reasoning to human operators. LapDoc satisfies both classical Buchanan-Shortliffe explanation criteria:
+</p>
+
+<h3>1. Dynamic Justification: Answering "WHY"</h3>
+<p>
+  Before answering any diagnostic question, the technician or user may inspect the system's motive. LapDoc retrieves the declarative <code>why</code> property of the active node:
+</p>
+<pre><code>def explain_question(self, node_id: str) -> str:
+    node = self.get_node(node_id)
+    if not node:
+        return "Node not found in knowledge base."
+    return node.get("why", "Diagnosing system state based on observed symptoms.")</code></pre>
+<p>
+  <em>Example</em>: When asking <em>"Does the laptop power on when removing the main battery and running solely on the AC adapter?"</em>, <code>explain_question()</code> outputs: <em>"Isolates a shorted battery management system (BMS) or dead cell from a faulty AC charging adapter or blown motherboard DC-in MOSFET."</em>
+</p>
+
+<h3>2. Chronological Deduction Audit: Answering "HOW"</h3>
+<p>
+  Upon reaching a terminal diagnosis, LapDoc reconstructs the complete chain of working memory assertions. The resulting <code>history_trace</code> lists every question evaluated, the user's specific observation, the rule triggered, and the clinical test protocol executed.
+</p>
+
+<!-- ================= SECTION 8 ================= -->
+<h1>8. Limitation Awareness: "Knowing What It Knows"</h1>
+<p>
+  In his seminal treatise <em>"Knowledge Engineering for the 1980s"</em>, Edward Feigenbaum stated that the defining boundary between brittle scripts and true expert systems is that <strong>an expert system must know its own limitations</strong>. LapDoc enforces this principle through three architectural guarantees:
+</p>
+
+<div class="callout callout-alert">
+  <div class="callout-title">Domain Boundary Contract</div>
+  <strong>In-Scope</strong>: Non-invasive electrical, firmware, thermal, and component-level diagnostic triage for portable PC hardware.<br>
+  <strong>Out-of-Scope</strong>: Silicon die micro-probing, PCB trace layer reconstruction, ASIC firmware reversing, or non-laptop peripherals.
+</div>
+
+<ol>
+  <li>
+    <strong>Confidence Threshold Gating</strong>:
+    If a deduction path terminates with certainty $CF < 0.60$ (the calibrated threshold stored in <code>boundary_rules.certainty_threshold</code>), LapDoc refuses to assert a definitive diagnosis. It flags <code>is_inconclusive = True</code> and issues a limitation directive advising lab bench multimeter tests.
+  </li>
+  <li>
+    <strong>Physical Damage Intercept</strong>:
+    When conditions like conductive liquid ingress or burnt smell are detected, the system immediately short-circuits triage to prevent electrical fires.
+  </li>
+  <li>
+    <strong>Domain Boundary Validator</strong>:
+    The <code>check_domain_boundary(symptom_text)</code> method scans inputs for out-of-scope hardware (e.g., laser printers, mechanical hard drive platter repair) and refuses execution before false conclusions occur.
+  </li>
+</ol>
+
+<!-- ================= SECTION 9 ================= -->
+<h1>9. Why Symbolic AI Outperforms LLMs in Hardware Triage</h1>
+<p>
+  Academic examiners frequently query why modern Deep Learning or Large Language Models (LLMs) were not used exclusively. LapDoc uses Symbolic AI for mission-critical reasons:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Evaluation Criteria</th>
+      <th>Generative LLM Wrapper</th>
+      <th>LapDoc Symbolic Expert System</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Explainability (XAI)</strong></td>
+      <td>Black-box neural weights. Cannot furnish formal mathematical proofs of its deductions.</td>
+      <td><strong>100% Deterministic & Auditable</strong>. Every step maps directly to an explicit node ID and rule link.</td>
+    </tr>
+    <tr>
+      <td><strong>Hallucination Risk</strong></td>
+      <td>High. Can invent false pinouts, fake voltage rails, and catastrophic repair advice.</td>
+      <td><strong>Zero Hallucination</strong>. Bounded strictly by curated, verified engineering facts in JSON.</td>
+    </tr>
+    <tr>
+      <td><strong>Safety in Electronics</strong></td>
+      <td>Probabilistic output can recommend shorting live lithium-ion or high-voltage backlight rails.</td>
+      <td>Safety-gated emergency stops (e.g., immediate battery disconnect protocols).</td>
+    </tr>
+    <tr>
+      <td><strong>Compute & Field Portability</strong></td>
+      <td>Requires GPU clusters, high-speed Internet, and high API latency.</td>
+      <td>Runs instantaneously on low-power CPUs from a bootable USB drive in offline field environments.</td>
+    </tr>
+    <tr>
+      <td><strong>Formal Verifiability</strong></td>
+      <td>Non-deterministic; minor prompt changes alter diagnostic conclusions unpredictably.</td>
+      <td>Unit tests formally verify graph acyclicity, score ranges, and rule coverage.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ================= SECTION 10 ================= -->
+<div class="page-break"></div>
+<h1>10. Academic Viva Defense Guide & Examination FAQ</h1>
+<p>
+  Use these authoritative model answers during thesis presentations, viva defenses, or project examinations:
+</p>
+
+<div class="callout callout-viva">
+  <div class="callout-title">Q1: "Is an Expert System obsolete now that Large Language Models exist?"</div>
+  <p><strong>Defense Answer:</strong> "No. In safety-critical diagnostic domains (such as electronics triage, aerospace fault monitoring, and clinical medicine), generative LLMs suffer from probabilistic hallucinations and lack verifiable causal reasoning. LapDoc implements Symbolic AI, which remains the gold standard when zero-hallucination guarantees, formal audit trails, and deterministic safety rules are mandatory. Furthermore, state-of-the-art AI architectures are increasingly neuro-symbolic, using symbolic engines like LapDoc as grounded verifiers for LLM interfaces."</p>
+</div>
+
+<div class="callout callout-viva">
+  <div class="callout-title">Q2: "What proves your Knowledge Base is declarative and not procedural?"</div>
+  <p><strong>Defense Answer:</strong> "Procedural code defines the flow of execution inside algorithms (<code>if condition: do_action()</code>). In LapDoc, <code>knowledge_base.json</code> contains pure declarative assertions of symptoms, relationships, costs, and certainty weights. The reasoning engine in <code>engine.py</code> contains zero laptop-specific rules. You could replace <code>knowledge_base.json</code> with an automotive transmission diagnostic schema, and <code>engine.py</code> would execute without altering a single line of Python code."</p>
+</div>
+
+<div class="callout callout-viva">
+  <div class="callout-title">Q3: "How does LapDoc handle conflicting or uncertain information?"</div>
+  <p><strong>Defense Answer:</strong> "LapDoc implements the Shortliffe-Buchanan Certainty Factor model. Each rule is assigned a certainty coefficient. When independent symptoms point to the same fault, we apply the MYCIN combination equation: $CF = CF_1 + CF_2(1 - CF_1)$. If conflicting evidence leaves the final certainty below our calibrated 60% decision threshold, the engine explicitly flags the result as inconclusive and advises physical multimeter/oscilloscope testing rather than making a speculative guess."</p>
+</div>
+
+<div class="callout callout-viva">
+  <div class="callout-title">Q4: "Where is Working Memory located during execution?"</div>
+  <p><strong>Defense Answer:</strong> "Working Memory is maintained dynamically through session history tuples. As the user confirms symptoms, the engine pushes assertions into the working memory fact base. The forward traversal algorithm evaluates candidate rules against this working memory to determine which questions to prune, which gateway to trigger, and when an early-exit intercept condition is met."</p>
+</div>
+
+<div class="callout callout-viva">
+  <div class="callout-title">Q5: "How does the system ensure the diagnostic graph is valid?"</div>
+  <p><strong>Defense Answer:</strong> "The test suite in <code>tests/test_engine.py</code> executes automated graph validation on every build. It verifies: (1) Graph acyclicity (no infinite recursion loops), (2) Referential integrity (every <code>next_question</code> pointer maps to an existing node), (3) Probability bounds ($0.0 \le CF \le 1.0$), and (4) Penalty score bounds across all 7 hardware categories."</p>
+</div>
+
+<!-- ================= SECTION 11 ================= -->
+<div class="page-break"></div>
+<h1>11. Annotated Core Code Listings</h1>
+
+<h3>1. Dynamic Inference Step & Leaf Resolution (engine.py)</h3>
+<pre><code>def process_emergency_step(self, history: List[tuple[str, str]]) -> Dict[str, Any]:
+    """
+    Advances inference state using history sequence: [(node_id, option_key), ...]
+    Derives terminal leaf or computes next candidate query.
+    """
+    if not history:
+        return {"status": "in_progress", "current_node": self.get_node(self.emergency_entry), "trace": []}
+
+    trace = []
+    current_node_id = self.emergency_entry
+
+    for i, (node_id, chosen_key) in enumerate(history):
+        node = self.get_node(node_id)
+        selected_option = next((opt for opt in node["options"] if opt["key"] == chosen_key), None)
+
+        trace.append({
+            "step": i + 1, "node_id": node_id, "title": node["title"],
+            "chosen_label": selected_option["label"], "why": node["why"]
+        })
+
+        # Check for immediate leaf diagnosis (Short-Circuit Pruning)
+        leaf = selected_option.get("leaf_diagnosis")
+        if leaf:
+            cf = leaf.get("certainty_factor", 1.0)
+            is_inconclusive = cf < self.certainty_threshold
+            return {
+                "status": "concluded",
+                "result": DiagnosticResult(
+                    title=leaf["title"], issue=leaf["issue"],
+                    remediation=leaf["remediation"], confidence_score=cf,
+                    is_deterministic=leaf.get("is_deterministic", True),
+                    is_inconclusive=is_inconclusive,
+                    history_trace=trace
+                ),
+                "trace": trace
+            }
+
+        next_q = selected_option.get("next_question")
+        if next_q:
+            current_node_id = next_q
+
+    return {"status": "in_progress", "current_node": self.get_node(current_node_id), "trace": trace}</code></pre>
+
+<h3>2. Multi-Subsystem Health Scoring & Defect Aggregation (engine.py)</h3>
+<pre><code>def evaluate_audit(self, answers: Dict[str, str]) -> AuditScorecard:
+    """
+    Evaluates observed symptoms across all 52 audit checks.
+    Computes penalty deductions, category health ratings, and repair estimates.
+    """
+    category_penalties = {cat: 0 for cat in self.categories.keys()}
+    flagged_defects = []
+    cost_min_total, cost_max_total = 0, 0
+
+    for nid, node in self.nodes.items():
+        if nid == "q_emergency_triage":
+            continue
+        cat = node.get("category", "other")
+        chosen_key = answers.get(nid)
+        matched_opt = next((opt for opt in node["options"] if opt["key"] == chosen_key), node["options"][0])
+
+        penalty = matched_opt.get("penalty", 0)
+        category_penalties[cat] += penalty
+
+        if not matched_opt.get("is_healthy", True) or penalty > 0:
+            min_c, max_c = self._parse_cost_range(matched_opt.get("estimated_cost_usd", "$0"))
+            cost_min_total += min_c
+            cost_max_total += max_c
+            flagged_defects.append({
+                "node_id": nid, "title": node["title"], "observed": matched_opt["label"],
+                "defect": matched_opt.get("defect_description", node["title"]),
+                "penalty": penalty, "cost": matched_opt.get("estimated_cost_usd", "$0")
+            })
+
+    # Normalized score computation (0-100)
+    total_penalty = sum(category_penalties.values())
+    overall_score = max(0, min(100, 100 - int(total_penalty * 0.45)))
+    grade, verdict = self._determine_grade_and_verdict(overall_score, flagged_defects)
+
+    return AuditScorecard(
+        total_score=overall_score, letter_grade=grade, verdict=verdict,
+        category_scores={c: max(0, 100 - (p * 2)) for c, p in category_penalties.items()},
+        flagged_defects=flagged_defects, total_estimated_repair_min=cost_min_total,
+        total_estimated_repair_max=cost_max_total,
+        summary_markdown=self._generate_audit_markdown(overall_score, grade, verdict, flagged_defects, cost_min_total, cost_max_total)
+    )</code></pre>
+
+<!-- ================= SECTION 12 ================= -->
+<h1>12. Academic References</h1>
+<p style="font-size: 9pt;">
+  1. <strong>Shortliffe, E. H., & Buchanan, B. G. (1975)</strong>. <em>A model of inexact reasoning in medicine</em>. Mathematical Biosciences, 23(3-4), 351-379.<br>
+  2. <strong>Buchanan, B. G., & Shortliffe, E. H. (1984)</strong>. <em>Rule-Based Expert Systems: The MYCIN Experiments of the Stanford Heuristic Programming Project</em>. Addison-Wesley.<br>
+  3. <strong>Russell, S., & Norvig, P. (2020)</strong>. <em>Artificial Intelligence: A Modern Approach</em> (4th ed.). Pearson.<br>
+  4. <strong>Jackson, P. (1999)</strong>. <em>Introduction to Expert Systems</em> (3rd ed.). Addison-Wesley Longman.<br>
+  5. <strong>Feigenbaum, E. A. (1982)</strong>. <em>Knowledge engineering for the 1980's</em>. Stanford University Computer Science Technical Report.<br>
+  6. <strong>Davis, R., Buchanan, B., & Shortliffe, E. (1977)</strong>. <em>Production rules as a representation for a knowledge-based consultation program</em>. Artificial Intelligence, 8(1), 15-45.
+</p>
+
+</body>
+</html>
